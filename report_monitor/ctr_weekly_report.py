@@ -30,6 +30,28 @@ spark = SparkSession \
     .enableHiveSupport() \
     .getOrCreate()
 
+#运营位信息
+POSITIONID_DICT = {'SHFWYZBB2': '随手记主产品-生活服务页中部banner2', 'SHFWYZBB1': '随手记主产品-生活服务页中部banner1',
+                        'SHFWYZBB3': '随手记主产品-生活服务页中部banner3', 'LCSYTT4': '随手记主产品-理财首页头图4',
+                        'LCSYTT3': '随手记主产品-理财首页头图3', 'LCSYTT1': '随手记主产品-理财首页头图1', 'LCSYTT2': '随手记主产品-理财首页头图2',
+                        'LCSYXF': '随手记主产品-理财首页悬浮icon', 'LCSYB5': '随手记主产品-理财首页banner5',
+                        'LCSYB2': '随手记主产品-理财首页banner2', 'LCSYB4': '随手记主产品-理财首页banner4',
+                        'LCSYB3': '随手记主产品-理财首页banner3', 'SHFWYDBTT': '随手记主产品-生活服务页顶部贴图',
+                        'LCSYB1': '随手记主产品-理财首页banner', 'LCSYTC': '随手记主产品-理财首页弹窗', 'ZTSYLBW': '随手记主产品-主题首页轮播位',
+                        'SSJSQB': '随手记主产品-随手记社区banner', 'SHFWCFSYB1': '生活服务财富首页banner1', 'SP': '闪屏',
+                        'SSJSYYYW': '首页运营位', 'SSJZHSYYYW': '随手记主产品-随手记账户首页运营位',
+                        'SSJTBTBXQY': '随手记主产品-随手记图表-图表详情页运营位', 'SSJTBTXTY': '随手记主产品-随手记图表-条形图页运营位',
+                        'SSJSYLCZXKP': '随手记主产品-随手记首页理财资讯卡片', 'SSJXYZBSY': '随手记主产品-信用账本首页运营位',
+                        'SSJSYSQKP': '随手记主产品-随手记首页社区卡片', 'SSJLSLBY': '随手记主产品-随手记流水列表页运营位', 'XXGDW': '社区-消息固定位',
+                        'LM-TT':'LM-TT(穿山甲)','LM-YLH':'LM-YLH(优量汇)'}
+
+#实验组信息
+sp_line = ['NO_TCTR_Group_BIGDATA','CTR_GBDT_Model_DJ','SSJ_CVR_MODEL_DJ','SSJ_WDL_SYYYW_DJ','SSJ_WDL_DJ','SSJ_WDL_SP_DJ','SSJ_DEEPFM_V1_DJ']
+syyyw_line = ['NO_TCTR_Group_BIGDATA','CTR_GBDT_Model_DJ','SSJ_CVR_MODEL_DJ','SSJ_WDL_SYYYW_DJ','SSJ_WDL_DJ','SSJ_WDL_V2_DJ']
+line_describe_dict = {'NO_TCTR_Group_BIGDATA':'随机组','CTR_GBDT_Model_DJ':'新手用户流量','SSJ_CVR_MODEL_DJ':'转化率模型','SSJ_WDL_SYYYW_DJ':'WDL baseline','SSJ_WDL_DJ':'WDL 实验组','SSJ_WDL_SP_DJ':'WDL 实验组','SSJ_DEEPFM_V1_DJ':'deepFM实验模型','SSJ_WDL_V2_DJ':'WDL 实验组'}
+sp_rate_dict = {'NO_TCTR_Group_BIGDATA':'10%','CTR_GBDT_Model_DJ':'-','SSJ_CVR_MODEL_DJ':'15%','SSJ_WDL_SYYYW_DJ':'60%','SSJ_WDL_DJ':'5%','SSJ_WDL_SP_DJ':'5%','SSJ_DEEPFM_V1_DJ':'5%'}
+syyyw_rate_dict = {'NO_TCTR_Group_BIGDATA':'10%','CTR_GBDT_Model_DJ':'-','SSJ_CVR_MODEL_DJ':'15%','SSJ_WDL_SYYYW_DJ':'65%','SSJ_WDL_DJ':'5%','SSJ_WDL_V2_DJ':'5%'}
+
 #RECEIVERS=['zhijie_liao@sui.com','haotao_lin@sui.com','zhe_feng@sui.com','min_zhuo@sui.com','ying_gu@sui.com']
 RECEIVERS=['zhijie_liao@sui.com']
 
@@ -227,13 +249,17 @@ def get_html_msg(df, table_title, merge_columns_list):
     html_msg = "<html>" + head + body + "</html>"
     if merge_columns_list:
         for r in range(len(merge_columns_list)):
-            print ("column:")
-            print (df[merge_columns_list[r]])
             span_num_list = get_span_num_list(df[merge_columns_list[r]].values.tolist())
-            #手动修正
+            #修正
             if r == 1:
-                span_num_list[-4] = 1
-                span_num_list.insert(-4,1)
+                span_num_list0 = get_span_num_list(df[merge_columns_list[0]].values.tolist())
+                for i in range(len(span_num_list)):
+                    if sum(span_num_list[:i]) < span_num_list0[0] and sum(span_num_list[:i + 1]) > span_num_list0[0]:
+                        a = span_num_list0[0] - sum(span_num_list[:i])
+                        b = span_num_list[i] - a
+                        span_num_list[i] = a
+                        span_num_list.insert(i,b)
+                        break
             html_msg = html_merge_cells(html_msg, span_num_list,r + 1)
     return html_msg
 
@@ -260,28 +286,6 @@ def html_merge_cells(html, span_num_list,col_no):
     return html_result
 
 def create_result_pic(today, last_week, last_last_week, two_mon_before):
-    ctr_sql = """
-	select 
-		view.ymd,view.positionid,view.groupname,view.s as show,click.c as click,click.c/(view.s+1) as ctr 
-	from 
-		(select ymd,positionid,groupname,count(*) as s from dw.bdl_bd_online_ad_client_show_log where ymd>='{last_week}' and ymd < '{today}' and positionid in ("SP","SSJSYYYW") and lower(productname) like '%mymoney%' group by ymd,positionid,groupname) view 
-	left join 
-		(select ymd,positionid,groupname,count(*) as c from dw.bdl_bd_onlinead_clicklog where ymd>='{last_week}' and ymd < '{today}' and positionid in ("SP","SSJSYYYW") and lower(productname) like '%mymoney%' group by ymd,positionid,groupname) click 
-	on 
-		view.ymd=click.ymd and view.positionid=click.positionid and view.groupname=click.groupname 
-	order by ymd,positionid""".format(last_week=last_week, today=today)
-
-    last_ctr_sql = """
-        select
-                view.ymd,view.positionid,view.groupname,view.s as show,click.c as click,click.c/(view.s+1) as ctr
-        from
-                (select ymd,positionid,groupname,count(*) as s from dw.bdl_bd_online_ad_client_show_log where ymd>='{last_week}' and ymd < '{today}' and positionid in ("SP","SSJSYYYW") and lower(productname) like '%mymoney%' group by ymd,positionid,groupname) view
-        left join
-                (select ymd,positionid,groupname,count(*) as c from dw.bdl_bd_onlinead_clicklog where ymd>='{last_week}' and ymd < '{today}' and positionid in ("SP","SSJSYYYW") and lower(productname) like '%mymoney%' group by ymd,positionid,groupname) click
-        on
-                view.ymd=click.ymd and view.positionid=click.positionid and view.groupname=click.groupname
-        order by ymd,positionid""".format(last_week=last_last_week, today=last_week)
-
     average_sql = """
 	select 
 		view.positionid,click.c as click,view.s as show,click.c/(view.s+1) as ctr 
@@ -297,65 +301,21 @@ def create_result_pic(today, last_week, last_last_week, two_mon_before):
         left join
                 (select positionid ,count(*) as c from dw.bdl_bd_onlinead_clicklog where ymd>='{last_last_week}' and ymd < '{last_week}' and positionid in ("SP","SSJSYYYW") and lower(productname) like '%mymoney%' group by positionid) click on view.positionid=click.positionid""".format(last_last_week=last_last_week, last_week=last_week)
 
-    busitype_sql = """SELECT
-    				ymd as ymd,'ssj' as product,positionid as positionid,systemname as systemname,busitype as busitype,account_name as account_name,groupname,count(distinct udid) as uv, sum(s_num) as show,sum(c_num) as click,float(sum(c_num)/sum(s_num)) as ctr
-			FROM
-			(SELECT
-    			v.*,s.*,c.*,ac.account_name
-			FROM
-    				(SELECT ymd,requestid,count(*) as s_num FROM dw.bdl_bd_online_ad_client_show_log  WHERE ymd >= '{last_week}' and ymd < '{today}'  AND lower(productname) like '%mymoney%' group by requestid,ymd) s
-			LEFT JOIN
-    				(select requestid as c_requestid,count(*) as c_num FROM dw.bdl_bd_onlinead_clicklog where ymd >= '{last_week}' and ymd < '{today}' and lower(productname) like '%mymoney%'  group by requestid) c
-			ON
-    				(s.requestid = c.c_requestid)
-			LEFT JOIN
-    				(SELECT requestid as v_requestid,systemname,udid,busitype,positionid,groupname FROM dw.bdl_bd_onlinead_viewlog WHERE ymd >= default.calc_date(10) AND lower(productname)  like '%mymoney%')  v
-			ON
-    				(v.v_requestid = s.requestid)
-			LEFT JOIN
-    				dw.bdl_sms_b_account ac
-			ON
-    				v.busitype = ac.id
-			) tt
-			where account_name in ('理财-随手记','生活服务-随手记','办卡-随手记','产品功能-随手记','账本市场-随手记','保险-随手记','产品运营-随手记')
-			group by
-    				ymd,positionid,systemname,busitype, account_name,groupname
-			having 
-    				sum(s_num) > 500 and sum(c_num) > 0
-			order by
-    				ymd,positionid,systemname,busitype, account_name, groupname"""
 
-    outer_data_sql = """select 
-    			ymd,group_name,position_id,system_name,sum(t.s_num) as show,sum(t.c_num) as click,sum(t.c_num)/sum(t.s_num) as ctr 
-			from 
-    			(select s.*,c.c_num from 
-        		(select ymd,request_id,group_name,position_id,system_name,count(*) as s_num from dw.bdl_bigdata_ad_outer_show_fodder where ymd >= '{last_week}' and ymd < '{today}' group by ymd,request_id,group_name,position_id,system_name) s
-        		left join
-        		(select ymd,request_id, count(*) as c_num from dw.bdl_bigdata_ad_outer_click_fodder where ymd >= '{last_week}' and ymd < '{today}' group by ymd, request_id) c
-        		on 
-            		s.ymd=c.ymd and s.request_id=c.request_id
-    			) t
-			group by 
-    			ymd,group_name,position_id,system_name
-			order by 
-    			ymd,group_name,position_id,system_name"""
-
-
-    ctr_df = spark.sql(ctr_sql).toPandas()
-    last_ctr_df = spark.sql(last_ctr_sql).toPandas()
     average_df = spark.sql(average_sql).toPandas()
     last_average_df = spark.sql(last_average_sql).toPandas()
-    busitype_df = spark.sql(busitype_sql.format(last_week = last_week,today = today)).toPandas()
-    last_busitype_df = spark.sql(busitype_sql.format(last_week = last_last_week,today = last_week)).toPandas()
-    two_mon_busitype_df = spark.sql(busitype_sql.format(last_week = two_mon_before,today = last_week)).toPandas()
-    outer_data_df = spark.sql(outer_data_sql.format(last_week = last_week,today = today)).toPandas()
-    last_outer_data_df = spark.sql(outer_data_sql.format(last_week = last_last_week,today = last_week)).toPandas()
-    #outer_data_df = spark.sql("select * from temp.outer_group_table").toPandas()
-    #last_outer_data_df = spark.sql("select * from temp.last_outer_group_table").toPandas()
-    #busitype_df = spark.sql("select * from temp.busitype_table").toPandas()
-    #last_busitype_df = spark.sql("select * from temp.last_busitype_table").toPandas()
-    #two_mon_busitype_df = spark.sql("select * from temp.two_mon_busitype_table").toPandas()
-    total_tail_data = spark.sql("select * from temp.group_busitype_table").toPandas()
+    total_busitype_df = spark.sql("select * from temp.ssj_busitype_table").toPandas()
+    busitype_df = total_busitype_df[total_busitype_df['ymd'] >= last_week]
+    last_busitype_df = total_busitype_df[(total_busitype_df['ymd'] >= last_last_week) & (total_busitype_df['ymd'] < last_week)]
+    two_mon_busitype_df = total_busitype_df[total_busitype_df['ymd'] < last_week]
+    ctr_df = busitype_df.groupby(('ymd', 'positionid', 'groupname'), as_index=False).sum()
+    ctr_df['ctr'] = ctr_df['click'] / ctr_df['show']
+    last_ctr_df = last_busitype_df.groupby(('ymd', 'positionid', 'groupname'), as_index=False).sum()
+    last_ctr_df['ctr'] = last_ctr_df['click'] / ctr_df['show']
+    outer_data_df = spark.sql("select * from temp.ssj_outer_ad_table_v1").toPandas()
+    last_outer_data_df = spark.sql("select * from temp.ssj_outer_ad_table_v2").toPandas()
+
+    total_tail_data = busitype_df
     return ctr_df, last_ctr_df, average_df, last_average_df, busitype_df, last_busitype_df, two_mon_busitype_df, total_tail_data, outer_data_df, last_outer_data_df
 
 def create_plot_df(df, group_column, sp_line, syyyw_line):
@@ -369,6 +329,9 @@ def create_plot_df(df, group_column, sp_line, syyyw_line):
     syyyw_line_Y_list, syyyw_block_Y_list = [], []
     for l in sp_line:
         li = df[(df['positionid'] == 'SP') & (df[group_column] == l)]
+        if not len(li):
+            li['ctr'] = np.array([0,0,0,0,0,0,0])
+            li['show'] = np.array([0,0,0,0,0,0,0])
         sp_line_Y_list.append(li['ctr'].values)
         sp_block_Y_list.append(li['show'].values)
     for l in syyyw_line:
@@ -425,25 +388,6 @@ if __name__ == '__main__':
     last_last_week = datetime.datetime.strftime((datetime.datetime.strptime(last_week,'%Y-%m-%d')-datetime.timedelta(days=7)),'%Y-%m-%d')
     two_mon_before = datetime.datetime.strftime((datetime.datetime.strptime(last_week,'%Y-%m-%d')-datetime.timedelta(days=60)),'%Y-%m-%d')
     ctr_df, last_ctr_df, average_df, last_average_df, busitype_df, last_busitype_df, two_mon_busitype_df, total_tail_data, outer_data_df, last_outer_data_df = create_result_pic(today,last_week,last_last_week,two_mon_before)
-    ctr_df = busitype_df.groupby(('ymd','positionid','groupname'),as_index = False).sum()
-    ctr_df['ctr'] = ctr_df['click'] / ctr_df['show']
-    last_ctr_df = last_busitype_df.groupby(('ymd', 'positionid', 'groupname'), as_index=False).sum()
-    last_ctr_df['ctr'] = last_ctr_df['click'] / ctr_df['show']
-
-    #运营位信息
-    positionid_dict = {'SHFWYZBB2': '随手记主产品-生活服务页中部banner2', 'SHFWYZBB1': '随手记主产品-生活服务页中部banner1',
-                        'SHFWYZBB3': '随手记主产品-生活服务页中部banner3', 'LCSYTT4': '随手记主产品-理财首页头图4',
-                        'LCSYTT3': '随手记主产品-理财首页头图3', 'LCSYTT1': '随手记主产品-理财首页头图1', 'LCSYTT2': '随手记主产品-理财首页头图2',
-                        'LCSYXF': '随手记主产品-理财首页悬浮icon', 'LCSYB5': '随手记主产品-理财首页banner5',
-                        'LCSYB2': '随手记主产品-理财首页banner2', 'LCSYB4': '随手记主产品-理财首页banner4',
-                        'LCSYB3': '随手记主产品-理财首页banner3', 'SHFWYDBTT': '随手记主产品-生活服务页顶部贴图',
-                        'LCSYB1': '随手记主产品-理财首页banner', 'LCSYTC': '随手记主产品-理财首页弹窗', 'ZTSYLBW': '随手记主产品-主题首页轮播位',
-                        'SSJSQB': '随手记主产品-随手记社区banner', 'SHFWCFSYB1': '生活服务财富首页banner1', 'SP': '闪屏',
-                        'SSJSYYYW': '首页运营位', 'SSJZHSYYYW': '随手记主产品-随手记账户首页运营位',
-                        'SSJTBTBXQY': '随手记主产品-随手记图表-图表详情页运营位', 'SSJTBTXTY': '随手记主产品-随手记图表-条形图页运营位',
-                        'SSJSYLCZXKP': '随手记主产品-随手记首页理财资讯卡片', 'SSJXYZBSY': '随手记主产品-信用账本首页运营位',
-                        'SSJSYSQKP': '随手记主产品-随手记首页社区卡片', 'SSJLSLBY': '随手记主产品-随手记流水列表页运营位', 'XXGDW': '社区-消息固定位',
-                        'LM-TT':'LM-TT(穿山甲)','LM-YLH':'LM-YLH(优量汇)'}
 
     #实验组信息
     sp_line = ['NO_TCTR_Group_BIGDATA','CTR_GBDT_Model_DJ','SSJ_CVR_MODEL_DJ','SSJ_WDL_SYYYW_DJ','SSJ_WDL_DJ','SSJ_WDL_SP_DJ','SSJ_DEEPFM_V1_DJ']
@@ -513,7 +457,7 @@ if __name__ == '__main__':
     other_position_df = other_position_df.drop(columns=['show_y','click_y'],axis=1)
     other_position_df = pd.merge(other_position_df,other_position_df.groupby('运营位',as_index=False).sum()[['运营位','曝光量']].rename(columns={'曝光量': 'avg_show'}), on=['运营位'], how='left')
     other_position_df = other_position_df.sort_values(['avg_show','操作系统','曝光量'],ascending = [False,True,False]).drop(columns=['avg_show'],axis=1)
-    other_position_df['运营位'] = other_position_df['运营位'].map(lambda x:positionid_dict[x] if x in positionid_dict.keys() else x)
+    other_position_df['运营位'] = other_position_df['运营位'].map(lambda x:POSITIONID_DICT[x] if x in POSITIONID_DICT.keys() else x)
     print ("other_position_df: ")
     print (other_position_df)
     other_position_table = get_html_msg(other_position_df, "<b>随手记其他运营位上周点击率统计（分操作系统和业务线）：</b>", ['运营位'])
@@ -531,8 +475,8 @@ if __name__ == '__main__':
     merge_outer_df = merge_outer_df.drop(columns=['show_y','click_y'],axis=1)
     merge_outer_df = pd.merge(merge_outer_df,merge_outer_df.groupby(('接入平台','运营位'),as_index=False).sum()[['接入平台','运营位','曝光量']].rename(columns={'曝光量': 'avg_show'}), on=['接入平台','运营位'], how='left')
     merge_outer_df = merge_outer_df.groupby('接入平台',sort=True).apply(lambda x:x.sort_values(['avg_show','操作系统','曝光量'],ascending = [False,True,False])).drop(columns=['avg_show'],axis=1)
-    merge_outer_df['运营位'] = merge_outer_df['运营位'].map(lambda x: positionid_dict[x] if x in positionid_dict.keys() else x)
-    merge_outer_df['接入平台'] = merge_outer_df['接入平台'].map(lambda x: positionid_dict[x] if x in positionid_dict.keys() else x)
+    merge_outer_df['运营位'] = merge_outer_df['运营位'].map(lambda x: POSITIONID_DICT[x] if x in POSITIONID_DICT.keys() else x)
+    merge_outer_df['接入平台'] = merge_outer_df['接入平台'].map(lambda x: POSITIONID_DICT[x] if x in POSITIONID_DICT.keys() else x)
     merge_outer_table = get_html_msg(merge_outer_df , "<b>随手记外部广告上周点击率统计（分平台、运营位和操作系统）：</b>", ['接入平台','运营位'])
 
 
@@ -594,7 +538,7 @@ if __name__ == '__main__':
     avg_two_mon['ctr'] = avg_two_mon['click'] / avg_two_mon['show']
     total_tail_data = avg_two_mon.append(total_tail_data)
     total_tail_data = total_tail_data[['ymd','positionid','systemname','account_name','groupname','show','click','ctr']].rename(columns={'ymd':'日期','positionid':'运营位','systemname':'操作系统','account_name':'业务线','groupname':'实验线','show':'曝光量','click':'点击量','ctr':'点击率'})
-    total_tail_data['运营位'] = total_tail_data['运营位'].map(lambda x: positionid_dict[x] if x in positionid_dict.keys() else x)
+    total_tail_data['运营位'] = total_tail_data['运营位'].map(lambda x: POSITIONID_DICT[x] if x in POSITIONID_DICT.keys() else x)
     total_tail_data.to_excel(path + 'total_tail_data.xlsx', index = False)
 
     send_email("随手记闪屏&首页运营位 CTR周报", mix_content, picture_attach_list, path + 'total_tail_data.xlsx')
