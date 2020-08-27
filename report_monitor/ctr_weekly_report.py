@@ -389,13 +389,6 @@ if __name__ == '__main__':
     two_mon_before = datetime.datetime.strftime((datetime.datetime.strptime(last_week,'%Y-%m-%d')-datetime.timedelta(days=60)),'%Y-%m-%d')
     ctr_df, last_ctr_df, average_df, last_average_df, busitype_df, last_busitype_df, two_mon_busitype_df, total_tail_data, outer_data_df, last_outer_data_df = create_result_pic(today,last_week,last_last_week,two_mon_before)
 
-    #实验组信息
-    sp_line = ['NO_TCTR_Group_BIGDATA','CTR_GBDT_Model_DJ','SSJ_CVR_MODEL_DJ','SSJ_WDL_SYYYW_DJ','SSJ_WDL_DJ','SSJ_WDL_SP_DJ','SSJ_DEEPFM_V1_DJ']
-    syyyw_line = ['NO_TCTR_Group_BIGDATA','CTR_GBDT_Model_DJ','SSJ_CVR_MODEL_DJ','SSJ_WDL_SYYYW_DJ','SSJ_WDL_DJ','SSJ_WDL_V2_DJ']
-    line_describe_dict = {'NO_TCTR_Group_BIGDATA':'随机组','CTR_GBDT_Model_DJ':'新手用户流量','SSJ_CVR_MODEL_DJ':'转化率模型','SSJ_WDL_SYYYW_DJ':'WDL baseline','SSJ_WDL_DJ':'WDL 实验组','SSJ_WDL_SP_DJ':'WDL 实验组','SSJ_DEEPFM_V1_DJ':'deepFM实验模型','SSJ_WDL_V2_DJ':'WDL 实验组'}
-    sp_rate_dict = {'NO_TCTR_Group_BIGDATA':'10%','CTR_GBDT_Model_DJ':'-','SSJ_CVR_MODEL_DJ':'15%','SSJ_WDL_SYYYW_DJ':'60%','SSJ_WDL_DJ':'5%','SSJ_WDL_SP_DJ':'5%','SSJ_DEEPFM_V1_DJ':'5%'}
-    syyyw_rate_dict = {'NO_TCTR_Group_BIGDATA':'10%','CTR_GBDT_Model_DJ':'-','SSJ_CVR_MODEL_DJ':'15%','SSJ_WDL_SYYYW_DJ':'65%','SSJ_WDL_DJ':'5%','SSJ_WDL_V2_DJ':'5%'}
-
     #点击信息表格生成
     table_result = []
     last_ctr_df['ymd'] = [datetime.datetime.strftime((datetime.datetime.strptime(i,'%Y-%m-%d')+datetime.timedelta(days=7)),'%Y-%m-%d') for i in last_ctr_df['ymd']]
