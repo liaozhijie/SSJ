@@ -31,28 +31,20 @@ spark = SparkSession \
     .getOrCreate()
 
 #运营位信息
-POSITIONID_DICT = {'SHFWYZBB2': '随手记主产品-生活服务页中部banner2', 'SHFWYZBB1': '随手记主产品-生活服务页中部banner1',
-                        'SHFWYZBB3': '随手记主产品-生活服务页中部banner3', 'LCSYTT4': '随手记主产品-理财首页头图4',
-                        'LCSYTT3': '随手记主产品-理财首页头图3', 'LCSYTT1': '随手记主产品-理财首页头图1', 'LCSYTT2': '随手记主产品-理财首页头图2',
-                        'LCSYXF': '随手记主产品-理财首页悬浮icon', 'LCSYB5': '随手记主产品-理财首页banner5',
-                        'LCSYB2': '随手记主产品-理财首页banner2', 'LCSYB4': '随手记主产品-理财首页banner4',
-                        'LCSYB3': '随手记主产品-理财首页banner3', 'SHFWYDBTT': '随手记主产品-生活服务页顶部贴图',
-                        'LCSYB1': '随手记主产品-理财首页banner', 'LCSYTC': '随手记主产品-理财首页弹窗', 'ZTSYLBW': '随手记主产品-主题首页轮播位',
-                        'SSJSQB': '随手记主产品-随手记社区banner', 'SHFWCFSYB1': '生活服务财富首页banner1', 'SP': '闪屏',
-                        'SSJSYYYW': '随手记首页运营位', 'SSJZHSYYYW': '随手记主产品-随手记账户首页运营位',
-                        'SSJTBTBXQY': '随手记主产品-随手记图表-图表详情页运营位', 'SSJTBTXTY': '随手记主产品-随手记图表-条形图页运营位',
-                        'SSJSYLCZXKP': '随手记主产品-随手记首页理财资讯卡片', 'SSJXYZBSY': '随手记主产品-信用账本首页运营位',
-                        'SSJSYSQKP': '随手记主产品-随手记首页社区卡片', 'SSJLSLBY': '随手记主产品-随手记流水列表页运营位', 'XXGDW': '社区-消息固定位',
-                        'LM-TT':'LM-TT(穿山甲)','LM-YLH':'LM-YLH(优量汇)'}
+POSITIONID_DICT = {'KNDKSYTT4':'卡牛主产品-卡牛贷款首页头图4','KNDKSYTT3':'卡牛主产品-卡牛贷款首页头图3','KNDKSYTT2':'卡牛主产品-卡牛贷款首页头图2','KNDKSYTT1':'卡牛主产品-卡牛贷款首页头图1',
+                   'KNSYRK1':'卡牛主产品-卡牛首页入口1','KNSYRK2':'卡牛主产品-卡牛首页入口2','KNSYRK3':'卡牛主产品-卡牛首页入口3',
+                   'KNSYRK4':'卡牛主产品-卡牛首页入口4','KNDCSYB':'卡牛主产品-卡牛贷超首页banner','KNJSKJYBANNER':'卡牛主产品-卡牛爵士卡全国加油优惠banner',
+                   'KNDKSYB':'卡牛主产品-卡牛贷款首页banner','KNSYFW':'首页运营位','SP':'闪屏','GRZXTT':'卡牛主产品-卡牛个人中心贴图位','KNZTH4WA':'卡牛主产品-卡牛状态后运营位-4文案',
+                   'KNZTH2WA': '卡牛主产品-卡牛状态后运营位-2文案'}
 
 #实验组信息
-sp_line = ['NO_TCTR_Group_BIGDATA','CTR_GBDT_Model_DJ','SSJ_CVR_MODEL_DJ','SSJ_WDL_SYYYW_DJ','SSJ_WDL_DJ','SSJ_WDL_SP_DJ']
-syyyw_line = ['NO_TCTR_Group_BIGDATA','CTR_GBDT_Model_DJ','SSJ_CVR_MODEL_DJ','SSJ_WDL_SYYYW_DJ','SSJ_WDL_DJ','SSJ_WDL_V2_DJ']
-line_describe_dict = {'NO_TCTR_Group_BIGDATA':'随机组','CTR_GBDT_Model_DJ':'新手用户流量','SSJ_CVR_MODEL_DJ':'转化率模型','SSJ_WDL_SYYYW_DJ':'WDL baseline','SSJ_WDL_DJ':'WDL 实验组','SSJ_WDL_SP_DJ':'WDL 实验组','SSJ_WDL_V2_DJ':'WDL 实验组'}
-sp_rate_dict = {'NO_TCTR_Group_BIGDATA':'10%','CTR_GBDT_Model_DJ':'-','SSJ_CVR_MODEL_DJ':'15%','SSJ_WDL_SYYYW_DJ':'65%','SSJ_WDL_DJ':'5%','SSJ_WDL_SP_DJ':'5%'}
-syyyw_rate_dict = {'NO_TCTR_Group_BIGDATA':'10%','CTR_GBDT_Model_DJ':'-','SSJ_CVR_MODEL_DJ':'15%','SSJ_WDL_SYYYW_DJ':'65%','SSJ_WDL_DJ':'5%','SSJ_WDL_V2_DJ':'5%'}
+sp_line = ['NO_TCTR_Group_BIGDATA','CTR_GBDT_Model_IMAGE_DJ','KN_WDL_V2_DJ']
+syyyw_line = ['NO_TCTR_Group_BIGDATA','CTR_GBDT_Model_DJ','CTR_GBDT_Model_IMAGE_DJ','KN_WDL_DJ','noFitGroup']
+line_describe_dict = {'NO_TCTR_Group_BIGDATA':'随机组','CTR_GBDT_Model_DJ':'GBDT baseline','New_User_Model_DJ':'新用户流量','CTR_GBDT_Model_IMAGE_DJ':'GBDT实验模型','KN_WDL_DJ':'WDL baseline','KN_WDL_V2_DJ':'WDL实验组','noFitGroup':'默认组'}
+sp_rate_dict = {'NO_TCTR_Group_BIGDATA':'10%','CTR_GBDT_Model_DJ':'0% + 20%新用户','KN_WDL_V2_DJ':'20%','CTR_GBDT_Model_IMAGE_DJ':'70%','New_User_Model_DJ':'80%新用户'}
+syyyw_rate_dict = {'NO_TCTR_Group_BIGDATA':'5%','CTR_GBDT_Model_DJ':'85% + 20%新用户','New_User_Model_DJ':'80%新用户','KN_WDL_DJ':'5%','noFitGroup':'-'}
 
-#RECEIVERS=['zhijie_liao@sui.com','haotao_lin@sui.com','zhe_feng@sui.com','min_zhuo@sui.com','ying_gu@sui.com','tao_ma@sui.com','liumeng_qin@sui.com']
+#RECEIVERS=['zhijie_liao@sui.com','haotao_lin@sui.com','zhe_feng@sui.com','min_zhuo@sui.com','ying_gu@sui.com','tao_ma@sui.com']
 RECEIVERS=['zhijie_liao@sui.com']
 
 
@@ -72,7 +64,7 @@ def send_email(title, mix_content, picture_attach_list, attach_path):
     message.attach(content_text)
     #添加附件
     xlsxpart = MIMEApplication(open(attach_path, 'rb').read())
-    xlsxpart.add_header('Content-Disposition', 'attachment', filename=('gbk','','%s~%s随手记内部广告曝光数据汇总.xlsx' % (datetime.datetime.strftime((datetime.datetime.strptime(today, '%Y-%m-%d') - datetime.timedelta(days=7)),'%Y-%m-%d'),datetime.datetime.now().strftime('%Y-%m-%d'))))
+    xlsxpart.add_header('Content-Disposition', 'attachment', filename=('gbk','','%s~%s卡牛内部广告曝光数据汇总.xlsx' % (datetime.datetime.strftime((datetime.datetime.strptime(today, '%Y-%m-%d') - datetime.timedelta(days=7)),'%Y-%m-%d'),datetime.datetime.now().strftime('%Y-%m-%d'))))
     message.attach(xlsxpart)
 
     message['Subject'] = Header(title,"utf-8")
@@ -105,18 +97,17 @@ def build_picture_html(picture_path, sign, picture_title):
     return pic_html,attach
 
 def get_picture_set(picture_path_list):
-    html_sp_busitype_ctr,p_sp_busitype_ctr = build_picture_html(picture_path_list[0],"image5","随手记闪屏曝光量点击率（分业务线）")
-    html_syyyw_busitype_ctr,p_syyyw_busitype_ctr = build_picture_html(picture_path_list[1],"image7","随手记首页运营位曝光量点击率（分业务线）")
-    html_sp_system_ctr,p_sp_system_ctr = build_picture_html(picture_path_list[2],"image9","随手记闪屏曝光量点击率（分操作系统）")
-    html_syyyw_system_ctr,p_syyyw_system_ctr = build_picture_html(picture_path_list[3],"image11","随手记首页运营位曝光量点击率（分操作系统）")
+    html_sp_busitype_ctr,p_sp_busitype_ctr = build_picture_html(picture_path_list[0],"image5","卡牛闪屏曝光量点击率（分业务线）")
+    html_syyyw_busitype_ctr,p_syyyw_busitype_ctr = build_picture_html(picture_path_list[1],"image7","卡牛首页运营位曝光量点击率（分业务线）")
+    html_sp_system_ctr,p_sp_system_ctr = build_picture_html(picture_path_list[2],"image9","卡牛闪屏曝光量点击率（分操作系统）")
+    html_syyyw_system_ctr,p_syyyw_system_ctr = build_picture_html(picture_path_list[3],"image11","卡牛首页运营位曝光量点击率（分操作系统）")
     return [html_sp_busitype_ctr,html_syyyw_busitype_ctr,html_sp_system_ctr,html_syyyw_system_ctr],[p_sp_busitype_ctr,p_syyyw_busitype_ctr,p_sp_system_ctr,p_syyyw_system_ctr]
 
 def email_content_mix(picture_path_list, html_table_list, head_msg, tail_msg, summary_word):
     html_picture_list, picture_attach_list = get_picture_set(picture_path_list)
     mix_content = head_msg + summary_word[0] + html_table_list[0] + html_table_list[1] + html_picture_list[0] + \
                   html_picture_list[2] + summary_word[1] + html_table_list[2] + html_table_list[3] + html_picture_list[
-                      1] + html_picture_list[3] + summary_word[2] + html_table_list[4] + summary_word[3] + \
-                  html_table_list[5] + tail_msg
+                      1] + html_picture_list[3] + summary_word[2] + html_table_list[4] + tail_msg
     return mix_content, picture_attach_list
 
 def get_span_num_list(data_list):
@@ -286,7 +277,7 @@ def html_merge_cells(html, span_num_list,col_no):
     return html_result
 
 def create_result_pic(today, last_week, last_last_week, two_mon_before):
-    total_busitype_df = spark.sql("select * from temp.ssj_busitype_table").toPandas()
+    total_busitype_df = spark.sql("select * from temp.kn_busitype_table").toPandas()
     busitype_df = total_busitype_df[total_busitype_df['ymd'] >= last_week]
     last_busitype_df = total_busitype_df[(total_busitype_df['ymd'] >= last_last_week) & (total_busitype_df['ymd'] < last_week)]
     two_mon_busitype_df = total_busitype_df[total_busitype_df['ymd'] < last_week]
@@ -298,40 +289,23 @@ def create_result_pic(today, last_week, last_last_week, two_mon_before):
     ctr_df['ctr'] = ctr_df['click'] / ctr_df['show']
     last_ctr_df = last_busitype_df.groupby(('ymd', 'positionid', 'systemname', 'groupname'), as_index=False).sum()
     last_ctr_df['ctr'] = last_ctr_df['click'] / ctr_df['show']
-    #外部广告数据
-    outer_data_df = spark.sql("select * from temp.ssj_outer_ad_table_v1").toPandas()
-    #[['ymd','position_id','system_name','YLH_adview','CSJ_adview','YLH_adclick','CSJ_adclick','YLH_adclick_rate','CSJ_adclick_rate']]
-    outer_data_YLH = outer_data_df[['ymd','position_id','system_name','ylh_adview','ylh_adclick','ylh_adclick_rate']].rename(columns={'ylh_adview':'show','ylh_adclick':'click','ylh_adclick_rate':'ctr'})
-    outer_data_YLH['group_name'] = ['LM-YLH'] * len(outer_data_YLH)
-    outer_data_CSJ = outer_data_df[['ymd','position_id','system_name','csj_adview','csj_adclick','csj_adclick_rate']].rename(columns={'csj_adview':'show','csj_adclick':'click','csj_adclick_rate':'ctr'})
-    outer_data_CSJ['group_name'] = ['LM-TT'] * len(outer_data_CSJ)
-    outer_data_df = outer_data_YLH.append(outer_data_CSJ)
-    print (outer_data_df)
-    last_outer_data_df = spark.sql("select * from temp.ssj_outer_ad_table_v2").toPandas()
-    outer_data_YLH = last_outer_data_df[['ymd', 'position_id', 'system_name', 'ylh_adview', 'ylh_adclick', 'ylh_adclick_rate']].rename(columns={'ylh_adview': 'show', 'ylh_adclick': 'click', 'ylh_adclick_rate': 'ctr'})
-    outer_data_YLH['group_name'] = ['LM-YLH'] * len(outer_data_YLH)
-    outer_data_CSJ = last_outer_data_df[['ymd', 'position_id', 'system_name', 'csj_adview', 'csj_adclick', 'csj_adclick_rate']].rename(columns={'csj_adview': 'show', 'csj_adclick': 'click', 'csj_adclick_rate': 'ctr'})
-    outer_data_CSJ['group_name'] = ['LM-TT'] * len(outer_data_CSJ)
-    last_outer_data_df = outer_data_YLH.append(outer_data_CSJ)
-
     total_tail_data = busitype_df
-    origid_df = spark.sql("select * from temp.ssj_distinct_origid_count").toPandas()
+    origid_df = spark.sql("select * from temp.kn_distinct_origid_count").toPandas()
     origid_df = origid_df.rename(columns={'positionid':'运营位','systemname':'操作系统','account_name':'业务线','origid_count':'素材个数'})
-    ecpm_df = spark.sql("select * from temp.ssj_ad_ecpm").toPandas()
-    ecpm_df = ecpm_df.rename(columns={'positionid': '运营位', 'systemname': '操作系统', 'account_name': '业务线', 'groupname': '实验线'})
-    # ecpm_df['ecpm'] = ['%.2f' % i for i in ecpm_df['ecpm']]
-    ecpm_busitype_df = ecpm_df[['运营位', '操作系统', '业务线', 'expose', 'click', 'income','income_2', 'ecpm', 'bids']].groupby(('运营位', '操作系统', '业务线'), as_index=False).sum()
-    ecpm_groupname_df = ecpm_df[['运营位', '操作系统', '实验线', 'expose', 'click', 'income','income_2', 'ecpm', 'bids']].groupby(('运营位', '操作系统', '实验线'), as_index=False).sum()
-    ecpm_busitype_df['ecpm'] = ['%.2f' % i for i in 1000 * np.array(ecpm_busitype_df['income'] / ecpm_busitype_df['expose'])]
-    ecpm_groupname_df['ecpm'] = ['%.2f' % i for i in 1000 * np.array(ecpm_groupname_df['income'] / ecpm_groupname_df['expose'])]
+    ecpm_df = spark.sql("select * from temp.kn_ad_ecpm").toPandas()
+    ecpm_df = ecpm_df.rename(columns={'positionid':'运营位','systemname':'操作系统','account_name':'业务线','groupname':'实验线'})
+    #ecpm_df['ecpm'] = ['%.2f' % i for i in ecpm_df['ecpm']]
+    ecpm_busitype_df = ecpm_df[['运营位','操作系统','业务线','expose','click','income','income_2','ecpm','bids']].groupby(('运营位','操作系统','业务线'),as_index=False).sum()
+    ecpm_groupname_df = ecpm_df[['运营位','操作系统','实验线','expose','click','income','income_2','ecpm','bids']].groupby(('运营位','操作系统','实验线'),as_index=False).sum()
+    ecpm_busitype_df['ecpm'] = ['%.2f' % i for i in 1000* np.array(ecpm_busitype_df['income']/ecpm_busitype_df['expose'])]
+    ecpm_groupname_df['ecpm'] = ['%.2f' % i for i in 1000* np.array(ecpm_groupname_df['income']/ecpm_groupname_df['expose'])]
     ecpm_busitype_df['ecpm_coeff'] = ['%.2f' % i for i in 1000 * np.array(ecpm_busitype_df['income_2'] / ecpm_busitype_df['expose'])]
     ecpm_groupname_df['ecpm_coeff'] = ['%.2f' % i for i in 1000 * np.array(ecpm_groupname_df['income_2'] / ecpm_groupname_df['expose'])]
     ecpm_busitype_df['素材平均单价*coeff'] = ['%.2f' % i for i in np.array(ecpm_busitype_df['income_2'] / ecpm_busitype_df['click'])]
     ecpm_groupname_df['素材平均单价*coeff'] = ['%.2f' % i for i in np.array(ecpm_groupname_df['income_2'] / ecpm_groupname_df['click'])]
-    ecpm_busitype_df['最大(bid*coeff)'] = ecpm_df[['运营位', '操作系统', '业务线', 'max_bid']].groupby(('运营位', '操作系统', '业务线'),as_index=False).max()['max_bid']
+    ecpm_busitype_df['最大(bid*coeff)'] = ecpm_df[['运营位','操作系统','业务线','max_bid']].groupby(('运营位','操作系统','业务线'),as_index=False).max()['max_bid']
     ecpm_groupname_df['最大(bid*coeff)'] = ecpm_df[['运营位', '操作系统', '实验线', 'max_bid']].groupby(('运营位', '操作系统', '实验线'),as_index=False).max()['max_bid']
-
-    return ctr_df, last_ctr_df, average_df, last_average_df, busitype_df, last_busitype_df, two_mon_busitype_df, total_tail_data, outer_data_df, last_outer_data_df, origid_df, ecpm_busitype_df, ecpm_groupname_df
+    return ctr_df, last_ctr_df, average_df, last_average_df, busitype_df, last_busitype_df, two_mon_busitype_df, total_tail_data, origid_df, ecpm_busitype_df, ecpm_groupname_df
 
 def create_plot_df(df, group_column, sp_line, syyyw_line, filter_twomon):
     if 'ymd' not in df.columns:
@@ -350,7 +324,7 @@ def create_plot_df(df, group_column, sp_line, syyyw_line, filter_twomon):
         sp_line_Y_list.append(li['ctr'].values)
         sp_block_Y_list.append(li['show'].values)
     for l in syyyw_line:
-        li = df[(df['positionid'] == 'SSJSYYYW') & (df[group_column] == l)]
+        li = df[(df['positionid'] == 'KNSYFW') & (df[group_column] == l)]
         if not len(li):
             li['ctr'] = np.array([0,0,0,0,0,0,0])
             li['show'] = np.array([0,0,0,0,0,0,0])
@@ -376,7 +350,7 @@ def create_plot_df(df, group_column, sp_line, syyyw_line, filter_twomon):
     df_sp_line.index = X
     df_syyyw_line.index = X
     df_sp_block = df[(df[group_column].isin(sp_line)) & (df['positionid'] == 'SP')][['ymd',group_column,'show']]
-    df_syyyw_block = df[(df[group_column].isin(syyyw_line)) & (df['positionid'] == 'SSJSYYYW')][['ymd',group_column,'show']]
+    df_syyyw_block = df[(df[group_column].isin(syyyw_line)) & (df['positionid'] == 'KNSYFW')][['ymd',group_column,'show']]
     return df_sp_line, df_syyyw_line, df_sp_block, df_syyyw_block
 
 
@@ -409,42 +383,23 @@ if __name__ == '__main__':
     last_week = datetime.datetime.strftime((datetime.datetime.strptime(today,'%Y-%m-%d')-datetime.timedelta(days=7)),'%Y-%m-%d')
     last_last_week = datetime.datetime.strftime((datetime.datetime.strptime(last_week,'%Y-%m-%d')-datetime.timedelta(days=7)),'%Y-%m-%d')
     two_mon_before = datetime.datetime.strftime((datetime.datetime.strptime(last_week,'%Y-%m-%d')-datetime.timedelta(days=60)),'%Y-%m-%d')
-    #today,last_week,last_last_week,two_mon_before = '2020-08-31','2020-08-24','2020-08-17','2020-06-25'
-    ctr_df, last_ctr_df, average_df, last_average_df, busitype_df, last_busitype_df, two_mon_busitype_df, total_tail_data, outer_data_df, last_outer_data_df, origid_df, ecpm_busitype_df, ecpm_groupname_df = create_result_pic(today,last_week,last_last_week,two_mon_before)
+    ctr_df, last_ctr_df, average_df, last_average_df, busitype_df, last_busitype_df, two_mon_busitype_df, total_tail_data, origid_df, ecpm_busitype_df, ecpm_groupname_df = create_result_pic(today,last_week,last_last_week,two_mon_before)
 
     # 环比
     last_sp_ctr = average_df[average_df['positionid'] == 'SP']['ctr'].values[0]
-    last_syyyw_ctr = average_df[average_df['positionid'] == 'SSJSYYYW']['ctr'].values[0]
+    last_syyyw_ctr = average_df[average_df['positionid'] == 'KNSYFW']['ctr'].values[0]
     last_last_sp_ctr = last_average_df[last_average_df['positionid'] == 'SP']['ctr'].values[0]
-    last_last_syyyw_ctr = last_average_df[last_average_df['positionid'] == 'SSJSYYYW']['ctr'].values[0]
+    last_last_syyyw_ctr = last_average_df[last_average_df['positionid'] == 'KNSYFW']['ctr'].values[0]
     last_sp_show = average_df[average_df['positionid'] == 'SP']['show'].values[0]
-    last_syyyw_show = average_df[average_df['positionid'] == 'SSJSYYYW']['show'].values[0]
+    last_syyyw_show = average_df[average_df['positionid'] == 'KNSYFW']['show'].values[0]
     last_last_sp_show = last_average_df[last_average_df['positionid'] == 'SP']['show'].values[0]
-    last_last_syyyw_show = last_average_df[last_average_df['positionid'] == 'SSJSYYYW']['show'].values[0]
+    last_last_syyyw_show = last_average_df[last_average_df['positionid'] == 'KNSYFW']['show'].values[0]
 
     sp_ctr_flow_rate = '%.2f%%' % ((last_sp_ctr - last_last_sp_ctr) * 100 / last_last_sp_ctr)
     sp_show_flow_rate = '%.2f%%' % ((last_sp_show - last_last_sp_show) * 100 / last_last_sp_show)
     syyyw_ctr_flow_rate = '%.2f%%' % ((last_syyyw_ctr - last_last_syyyw_ctr) * 100 / last_last_syyyw_ctr)
     syyyw_show_flow_rate = '%.2f%%' % ((last_syyyw_show - last_last_syyyw_show) * 100 / last_last_syyyw_show)
 
-
-    # 外部广告数据表格
-    last_outer_data_df['ymd'] = [datetime.datetime.strftime((datetime.datetime.strptime(i, '%Y-%m-%d') + datetime.timedelta(days=7)), '%Y-%m-%d') for i in last_outer_data_df['ymd']]
-    merge_outer_df = outer_data_df.merge(last_outer_data_df, how='left',on=['ymd', 'group_name', 'position_id', 'system_name'])
-    merge_outer_df = merge_outer_df.groupby(('group_name', 'position_id', 'system_name'), as_index=False).sum()[['group_name', 'position_id', 'system_name', 'show_x', 'click_x', 'show_y', 'click_y']].rename(columns={'position_id': '运营位', 'system_name': '操作系统', 'group_name': '接入平台', 'show_x': '曝光量', 'click_x': '点击量'})
-    merge_outer_df['点击率'] = ['%.2f%%' % (d * 100) for d in merge_outer_df['点击量'] / merge_outer_df['曝光量']]
-    merge_outer_df['曝光占比'] = ['%.2f%%' % (d * 100) for d in merge_outer_df['曝光量'] / merge_outer_df['曝光量'].sum()]
-    merge_outer_df = merge_outer_df[['接入平台', '运营位', '操作系统', '曝光量', '曝光占比', '点击量', '点击率', 'show_y', 'click_y']]
-    merge_outer_df['曝光量环比上上周'] = ['%.2f%%' % (i * 100) for i in(merge_outer_df['曝光量'] - merge_outer_df['show_y']) / merge_outer_df['show_y']]
-    merge_outer_df['点击量环比上上周'] = ['%.2f%%' % (i * 100) for i in(merge_outer_df['点击量'] - merge_outer_df['click_y']) / merge_outer_df['click_y']]
-    merge_outer_df['点击率环比上上周'] = ['%.2f%%' % (i * 100) for i in (merge_outer_df['点击量'] / merge_outer_df['曝光量'] - merge_outer_df['click_y'] / merge_outer_df['show_y']) / (merge_outer_df['click_y'] / merge_outer_df['show_y'])]
-    merge_outer_df = merge_outer_df.drop(columns=['show_y', 'click_y'], axis=1)
-    merge_outer_df = pd.merge(merge_outer_df, merge_outer_df.groupby(('接入平台', '运营位'), as_index=False).sum()[['接入平台', '运营位', '曝光量']].rename(columns={'曝光量': 'avg_show'}), on=['接入平台', '运营位'], how='left')
-    merge_outer_df = merge_outer_df[merge_outer_df['曝光量'] > 0]
-    merge_outer_df = merge_outer_df.groupby('接入平台', sort=True).apply(lambda x: x.sort_values(['avg_show', '操作系统', '曝光量'], ascending=[False, True, False])).drop(columns=['avg_show'],axis=1)
-    merge_outer_df['运营位'] = merge_outer_df['运营位'].map(lambda x: POSITIONID_DICT[x] if x in POSITIONID_DICT.keys() else x)
-    merge_outer_df['接入平台'] = merge_outer_df['接入平台'].map(lambda x: POSITIONID_DICT[x] if x in POSITIONID_DICT.keys() else x)
-    merge_outer_table = get_html_msg(merge_outer_df, "<b>随手记外部广告上周点击率统计（分平台、运营位和操作系统）：</b>", ['接入平台', '运营位'])
 
     #点击信息表格生成
     table_result = []
@@ -453,10 +408,10 @@ if __name__ == '__main__':
     last_busitype_df['ymd'] = [datetime.datetime.strftime((datetime.datetime.strptime(i,'%Y-%m-%d')+datetime.timedelta(days=7)),'%Y-%m-%d') for i in last_busitype_df['ymd']]
     merge_busitype_df = busitype_df.merge(last_busitype_df, how='left', on=['ymd','positionid','systemname','account_name','groupname'])
         
-    for p in ['SP','SSJSYYYW']:
+    for p in ['SP','KNSYFW']:
         describe, rate= [], []
         rate_dict = sp_rate_dict
-        if p == 'SSJSYYYW':
+        if p == 'KNSYFW':
             rate_dict = syyyw_rate_dict
         df_group = merge_df[merge_df['positionid']==p][['show_x','click_x','show_y','click_y','groupname','systemname']].groupby(('systemname','groupname'),as_index=False).sum()
         df_group = df_group[df_group['groupname'].isin(line_describe_dict.keys())]
@@ -475,12 +430,12 @@ if __name__ == '__main__':
         df_group = df_group.drop(columns=['show_y','click_y'],axis=1)
         df_group = df_group[['操作系统','实验线','说明','流量占比','曝光量','曝光占比','点击量','点击占比','点击率','曝光量环比上上周','点击量环比上上周','点击率环比上上周']].reset_index(drop=True)
         df_group = df_group.sort_values(['操作系统','曝光量'],ascending = [True,False])
-        df_group = df_group.merge(ecpm_groupname_df[ecpm_groupname_df['运营位'] == p][['操作系统', '实验线', 'ecpm','ecpm_coeff','素材平均单价*coeff','最大(bid*coeff)']], how='left',on=['操作系统', '实验线']).fillna('-')
+        df_group = df_group.merge(ecpm_groupname_df[ecpm_groupname_df['运营位'] == p][['操作系统', '实验线', 'ecpm','ecpm_coeff','素材平均单价*coeff','最大(bid*coeff)']],how='left', on=['操作系统', '实验线']).fillna('-')
         concat_table = []
         for sys in ['Android','ios']:
             busitype_table = merge_busitype_df[(merge_busitype_df['positionid'] == p) & (merge_busitype_df['systemname'] == sys)].groupby('account_name',as_index=False).sum()[['account_name','show_x','click_x','show_y','click_y']].rename(columns={'account_name':'业务线','show_x':'曝光量','click_x':'点击量'})
             busitype_table['点击率'] = ['%.2f%%' % (d * 100) for d in busitype_table['点击量']/busitype_table['曝光量']]
-            busitype_table['曝光占比'] = ['%.2f%%' % (d * 100) for d in busitype_table['曝光量'] / (busitype_table['曝光量'].sum() + merge_outer_df[(merge_outer_df['运营位']==POSITIONID_DICT[p]) & (merge_outer_df['操作系统'] == sys)]['曝光量'].sum())]
+            busitype_table['曝光占比'] = ['%.2f%%' % (d * 100) for d in busitype_table['曝光量'] / (busitype_table['曝光量'].sum())]
             busitype_table['操作系统'] = [sys] * len(busitype_table)
             busitype_table = busitype_table[['操作系统','业务线','曝光量','曝光占比','点击量','点击率','show_y','click_y']]
             busitype_table['曝光量环比上上周'] = ['%.2f%%' % (i*100) for i in (busitype_table['曝光量'] - busitype_table['show_y'])/busitype_table['show_y']]
@@ -488,16 +443,16 @@ if __name__ == '__main__':
             busitype_table['点击率环比上上周'] = ['%.2f%%' % (i*100) for i in (busitype_table['点击量']/busitype_table['曝光量'] - busitype_table['click_y']/busitype_table['show_y'])/(busitype_table['click_y']/busitype_table['show_y'])]
             sum_list = [sys,'内部业务汇总',busitype_table['曝光量'].sum(),0,busitype_table['点击量'].sum(),'%.2f%%' % (busitype_table['点击量'].sum()/busitype_table['曝光量'].sum() * 100),'%.2f%%' % ((busitype_table['曝光量'].sum()-busitype_table['show_y'].sum())/busitype_table['show_y'].sum() * 100),'%.2f%%' % ((busitype_table['点击量'].sum()-busitype_table['click_y'].sum())/busitype_table['click_y'].sum() * 100),'%.2f%%' % ((busitype_table['点击量'].sum()/busitype_table['曝光量'].sum() - busitype_table['click_y'].sum()/busitype_table['show_y'].sum()) / (busitype_table['click_y'].sum()/busitype_table['show_y'].sum()) * 100)]
             outer_compare_df = pd.DataFrame(data = [sum_list], columns = busitype_table.drop(columns=['show_y','click_y'],axis=1).columns)
-            outer_result = merge_outer_df[(merge_outer_df['运营位']==POSITIONID_DICT[p]) & (merge_outer_df['操作系统'] == sys)].rename(columns={'接入平台':'业务线'}).drop(columns=['运营位'],axis=1)
-            outer_result = outer_result[['操作系统','业务线','曝光量','曝光占比','点击量','点击率','曝光量环比上上周','点击量环比上上周','点击率环比上上周']]
+            #outer_result = merge_outer_df[(merge_outer_df['运营位']==POSITIONID_DICT[p]) & (merge_outer_df['操作系统'] == sys)].rename(columns={'接入平台':'业务线'}).drop(columns=['运营位'],axis=1)
+            #outer_result = outer_result[['操作系统','业务线','曝光量','曝光占比','点击量','点击率','曝光量环比上上周','点击量环比上上周','点击率环比上上周']]
             #2表示两个外部平台
-            len_outer = len(outer_result)
-            for ap in range(2-len_outer):
-                for plat in ('LM-TT(穿山甲)','LM-YLH(优量汇)'):
-                    if plat not in outer_result['业务线'].values:
-                        outer_result = outer_result.append(pd.DataFrame(data=[[sys,plat,0,0,0,0,0,0,0]],columns = outer_result.columns))
-            outer_compare_df = outer_compare_df.append(outer_result).sort_values(['业务线'],ascending = False)
-            outer_compare_df['曝光占比'] = ['%.2f%%' % (d * 100) for d in outer_compare_df['曝光量'] / outer_compare_df['曝光量'].sum()]
+            #len_outer = len(outer_result)
+            #for ap in range(2-len_outer):
+            #    for plat in ('LM-TT(穿山甲)','LM-YLH(优量汇)'):
+            #        if plat not in outer_result['业务线'].values:
+             #           outer_result = outer_result.append(pd.DataFrame(data=[[sys,plat,0,0,0,0,0,0,0]],columns = outer_result.columns))
+            #outer_compare_df = outer_compare_df.append(outer_result).sort_values(['业务线'],ascending = False)
+            #outer_compare_df['曝光占比'] = ['%.2f%%' % (d * 100) for d in outer_compare_df['曝光量'] / outer_compare_df['曝光量'].sum()]
             busitype_table = busitype_table.drop(columns=['show_y','click_y'],axis=1).sort_values(['曝光量'],ascending = False)
             busitype_table = busitype_table.append(outer_compare_df)
             concat_table.append(busitype_table)
@@ -512,20 +467,20 @@ if __name__ == '__main__':
         base_table = base_table.merge(origid_df[origid_df['运营位'] == p][['操作系统','业务线','素材个数']], how='left',on=['操作系统','业务线']).fillna('-')
         base_table = base_table.merge(ecpm_busitype_df[ecpm_busitype_df['运营位'] == p][['操作系统','业务线','ecpm','ecpm_coeff','素材平均单价*coeff','最大(bid*coeff)']], how='left',on=['操作系统','业务线']).fillna('-')
         sum_index = base_table[base_table['业务线'] == '内部业务汇总'].index
-        base_table.iloc[sum_index[0]] = base_table.iloc[sum_index[0]].to_list()[:9] + [np.sum([float(i) for i in base_table[base_table['操作系统'] == 'Android']['素材个数'] if i != '-']),'%.2f' % (1000 * ecpm_busitype_df[(ecpm_busitype_df['运营位'] == p) & (ecpm_busitype_df['操作系统'] == 'Android')]['income'].sum() / ecpm_busitype_df[(ecpm_busitype_df['运营位'] == p) & (ecpm_busitype_df['操作系统'] == 'Android')]['expose'].sum()),'-','-','-']
-        base_table.iloc[sum_index[1]] = base_table.iloc[sum_index[1]].to_list()[:9] + [np.sum([float(i) for i in base_table[base_table['操作系统'] == 'ios']['素材个数'] if i != '-']), '%.2f' % (1000 * ecpm_busitype_df[(ecpm_busitype_df['运营位'] == p) & (ecpm_busitype_df['操作系统'] == 'ios')]['income'].sum() / ecpm_busitype_df[(ecpm_busitype_df['运营位'] == p) & (ecpm_busitype_df['操作系统'] == 'ios')]['expose'].sum()),'-','-','-']
-        base_table.iloc[base_table[base_table['业务线'] == '%s内部广告汇总' % POSITIONID_DICT[p]].index] = list(base_table.iloc[base_table[base_table['业务线'] == '%s内部广告汇总' % POSITIONID_DICT[p]].index].values[0][:9]) + [np.sum([float(i) for i in base_table['素材个数'] if i != '-'])/2, '%.2f' % (1000 * ecpm_busitype_df[(ecpm_busitype_df['运营位'] == p)]['income'].sum() / ecpm_busitype_df[(ecpm_busitype_df['运营位'] == p)]['expose'].sum()),'-','-','-']
+        base_table.iloc[sum_index[0]] = base_table.iloc[sum_index[0]].to_list()[:9] + [np.sum([float(i) for i in base_table[base_table['操作系统'] == 'Android']['素材个数'] if i != '-']), '%.2f' % (1000 * ecpm_busitype_df[(ecpm_busitype_df['运营位'] == p) & (ecpm_busitype_df['操作系统'] == 'Android')]['income'].sum() /ecpm_busitype_df[(ecpm_busitype_df['运营位'] == p) & (ecpm_busitype_df['操作系统'] == 'Android')]['expose'].sum()),'-','-','-']
+        base_table.iloc[sum_index[1]] = base_table.iloc[sum_index[1]].to_list()[:9] + [np.sum([float(i) for i in base_table[base_table['操作系统'] == 'ios']['素材个数'] if i != '-']), '%.2f' % (1000 * ecpm_busitype_df[(ecpm_busitype_df['运营位'] == p) & (ecpm_busitype_df['操作系统'] == 'Android')]['income'].sum() /ecpm_busitype_df[(ecpm_busitype_df['运营位'] == p) & (ecpm_busitype_df['操作系统'] == 'ios')]['expose'].sum()),'-','-','-']
+        base_table.iloc[base_table[base_table['业务线'] == '%s内部广告汇总' % POSITIONID_DICT[p]].index] = list(base_table.iloc[base_table[base_table['业务线'] == '%s内部广告汇总' % POSITIONID_DICT[p]].index].values[0][:9]) + [np.sum([float(i) for i in base_table['素材个数'] if i != '-']) / 2,'%.2f' % (1000 * ecpm_busitype_df[(ecpm_busitype_df['运营位'] == p)]['income'].sum() /ecpm_busitype_df[(ecpm_busitype_df['运营位'] == p)]['expose'].sum()),'-','-','-']
         base_table['点击量'] = [int(i) for i in base_table['点击量']]
-        base_table['曝光占比'] = ['%.2f%%' % (i*100) for i in base_table['曝光量'] / (base_table[base_table['业务线'].isin(['LM-TT(穿山甲)','LM-YLH(优量汇)','内部业务汇总'])]['曝光量']).sum()]
+        base_table['曝光占比'] = ['%.2f%%' % (i*100) for i in base_table['曝光量'] / (base_table[base_table['业务线'] =='内部业务汇总']['曝光量']).sum()]
         table_result += [base_table, df_group]
 
-    sp_busitype_table_html = get_html_msg(table_result[0], "<b>随手记闪屏上周点击率统计（分操作系统和业务线）：</b>", ['操作系统'])
-    sp_table_html = get_html_msg(table_result[1], "<b>随手记闪屏上周点击率统计（分操作系统和实验线）：</b>", ['操作系统'])
-    syyyw_busitype_table_html = get_html_msg(table_result[2], "<b>随手记首页运营位上周点击率统计（分操作系统和业务线）：</b>", ['操作系统'])
-    syyyw_table_html = get_html_msg(table_result[3], "<b>随手记首页运营位上周点击率统计（分操作系统和实验线）：</b>", ['操作系统'])
+    sp_busitype_table_html = get_html_msg(table_result[0], "<b>卡牛闪屏上周点击率统计（分操作系统和业务线）：</b>", ['操作系统'])
+    sp_table_html = get_html_msg(table_result[1], "<b>卡牛闪屏上周点击率统计（分操作系统和实验线）：</b>", ['操作系统'])
+    syyyw_busitype_table_html = get_html_msg(table_result[2], "<b>卡牛首页运营位上周点击率统计（分操作系统和业务线）：</b>", ['操作系统'])
+    syyyw_table_html = get_html_msg(table_result[3], "<b>卡牛首页运营位上周点击率统计（分操作系统和实验线）：</b>", ['操作系统'])
 
     #其他运营位表格
-    other_position_df = merge_busitype_df[merge_busitype_df['positionid'].isin([i for i in list(merge_busitype_df['positionid'].unique()) if i not in ('SP','SSJSYYYW')])]
+    other_position_df = merge_busitype_df[merge_busitype_df['positionid'].isin([i for i in list(merge_busitype_df['positionid'].unique()) if i not in ('SP','KNSYFW')])]
     other_position_df = other_position_df.groupby(('positionid','systemname','account_name'),as_index=False).sum()[['positionid','systemname','account_name','show_x','click_x','show_y','click_y']].rename(columns={'positionid':'运营位','systemname':'操作系统','account_name':'业务线','show_x':'曝光量','click_x':'点击量'})
     other_position_df['点击率']= ['%.2f%%' % (d * 100) for d in other_position_df['点击量']/other_position_df['曝光量']]
     other_position_df['曝光占比']= ['%.2f%%' % (d * 100) for d in other_position_df['曝光量']/other_position_df['曝光量'].sum()]
@@ -537,20 +492,20 @@ if __name__ == '__main__':
     other_position_df = pd.merge(other_position_df,other_position_df.groupby('运营位',as_index=False).sum()[['运营位','曝光量']].rename(columns={'曝光量': 'avg_show'}), on=['运营位'], how='left')
     other_position_df = other_position_df.sort_values(['avg_show','操作系统','曝光量'],ascending = [False,True,False]).drop(columns=['avg_show'],axis=1)
     other_position_df['运营位'] = other_position_df['运营位'].map(lambda x:POSITIONID_DICT[x] if x in POSITIONID_DICT.keys() else x)
-    other_position_table = get_html_msg(other_position_df, "<b>随手记其他运营位上周点击率统计（分操作系统和业务线）：</b>", ['运营位'])
+    other_position_table = get_html_msg(other_position_df, "<b>卡牛其他运营位上周点击率统计（分操作系统和业务线）：</b>", ['运营位'])
 
 
     #画图
     #df_sp_line, df_syyyw_line, df_sp_block, df_syyyw_block = create_plot_df(ctr_df, 'groupname', sp_line, syyyw_line)
-    sp_busitype_line = ['理财-随手记','生活服务-随手记','办卡-随手记','产品功能-随手记','账本市场-随手记','保险-随手记','产品运营-随手记']
-    syyyw_busitype_line = ['理财-随手记','生活服务-随手记','办卡-随手记','产品功能-随手记','产品运营-随手记']
+    sp_busitype_line = ['办卡-卡牛','产品功能-卡牛','爵士卡-卡牛']
+    syyyw_busitype_line = ['办卡-卡牛','产品功能-卡牛','爵士卡-卡牛']
     system_line = ['Android','ios']
-    df_busitype_sp_line, df_busitype_syyyw_line, df_busitype_sp_block, df_busitype_syyyw_block = create_plot_df(busitype_df.groupby(('ymd','positionid','account_name'),as_index=False).sum(), 'account_name', sp_busitype_line, syyyw_busitype_line,0)
-    df_system_sp_line, df_system_syyyw_line, df_system_sp_block, df_system_syyyw_block = create_plot_df(busitype_df.groupby(('ymd','positionid','systemname'),as_index=False).sum(), 'systemname', system_line, system_line,0)
-    df_avg_sp_line, df_avg_syyyw_line, df_avg_sp_block, df_avg_syyyw_block = create_plot_df(two_mon_busitype_df.groupby(('positionid','account_name'),as_index=False).sum(), 'account_name', sp_busitype_line, syyyw_busitype_line,1)
-    df_avg_s_sp_line, df_avg_s_syyyw_line, df_avg_s_sp_block, df_avg_s_syyyw_block = create_plot_df(two_mon_busitype_df.groupby(('positionid','systemname'),as_index=False).sum(), 'systemname', system_line, system_line,1)
+    df_busitype_sp_line, df_busitype_syyyw_line, df_busitype_sp_block, df_busitype_syyyw_block = create_plot_df(busitype_df.groupby(('ymd','positionid','account_name'),as_index=False).sum(), 'account_name', sp_busitype_line, syyyw_busitype_line, 0)
+    df_system_sp_line, df_system_syyyw_line, df_system_sp_block, df_system_syyyw_block = create_plot_df(busitype_df.groupby(('ymd','positionid','systemname'),as_index=False).sum(), 'systemname', system_line, system_line, 0)
+    df_avg_sp_line, df_avg_syyyw_line, df_avg_sp_block, df_avg_syyyw_block = create_plot_df(two_mon_busitype_df.groupby(('positionid','account_name'),as_index=False).sum(), 'account_name', sp_busitype_line, syyyw_busitype_line, 1)
+    df_avg_s_sp_line, df_avg_s_syyyw_line, df_avg_s_sp_block, df_avg_s_syyyw_block = create_plot_df(two_mon_busitype_df.groupby(('positionid','systemname'),as_index=False).sum(), 'systemname', system_line, system_line, 1)
 
-    path = '/home/tico/zhijieliao/ssj_weekly_report/'
+    path = '/home/tico/zhijieliao/kn_weekly_report/'
     sns.set(font='SimHei',style='darkgrid')
     ser_plot(df_busitype_sp_line.append(df_avg_sp_line),df_busitype_sp_block.append(df_avg_sp_block), path + 'sp_busitype_ctr.png','account_name')
     sns.set(font='SimHei',style='darkgrid')
@@ -561,13 +516,13 @@ if __name__ == '__main__':
     ser_plot(df_system_syyyw_line.append(df_avg_s_syyyw_line), df_system_syyyw_block.append(df_avg_s_syyyw_block), path + 'syyyw_system_ctr.png','systemname')
        
     #邮件元素汇总
-    sp_word = "<h2>一.随手记闪屏：</h2><br>" + "<br>"
-    syyyw_word = "<br><br><h2>二.随手记首页运营位：</h2><br>" + "<br><br>"
-    other_word = "<br><br><br><h2>三.随手记其他运营位：</h2><br><br>"
-    outer_word = "<br><br><h2>四.随手记外部广告上周各运营位统计：</h2><br><br>"
+    sp_word = "<h2>一.卡牛闪屏：</h2><br>" + "<br>"
+    syyyw_word = "<br><br><h2>二.卡牛首页运营位：</h2><br>" + "<br><br>"
+    other_word = "<br><br><br><h2>三.卡牛其他运营位：</h2><br><br>"
+    outer_word = "<br><br><h2>四.卡牛外部广告上周各运营位统计：</h2><br><br>"
     head_msg = """
                 Hi，早上好~<br>
-                以下是随手记闪屏和首页运营位上周（%s ~ %s）的周报：<br><br><br>""" % (last_week, today)
+                以下是卡牛闪屏和首页运营位上周（%s ~ %s）的周报：<br><br><br>""" % (last_week, today)
     tail_msg = """
                 <br><br><br><br><br>----------------------------------------------------<br>
                 <b>廖志杰<br>
@@ -575,8 +530,8 @@ if __name__ == '__main__':
                 邮箱：zhijie_liao@sui.com</b>
                 """
     picture_path_list = [path + 'sp_busitype_ctr.png', path + 'syyyw_busitype_ctr.png', path + 'sp_system_ctr.png', path + 'syyyw_system_ctr.png']
-    html_table_list = [sp_busitype_table_html,sp_table_html,syyyw_busitype_table_html,syyyw_table_html,other_position_table,merge_outer_table]
-    summary_word = [sp_word,syyyw_word,other_word,outer_word]
+    html_table_list = [sp_busitype_table_html,sp_table_html,syyyw_busitype_table_html,syyyw_table_html,other_position_table]
+    summary_word = [sp_word,syyyw_word,other_word]
     mix_content, picture_attach_list = email_content_mix(picture_path_list, html_table_list, head_msg, tail_msg, summary_word)
     avg_two_mon = two_mon_busitype_df.groupby(['positionid','systemname','account_name','groupname'],as_index=False).mean()
     avg_two_mon['ymd'] = ['近两月平均'] * len(avg_two_mon)
@@ -586,7 +541,7 @@ if __name__ == '__main__':
     total_tail_data['运营位'] = total_tail_data['运营位'].map(lambda x: POSITIONID_DICT[x] if x in POSITIONID_DICT.keys() else x)
     total_tail_data.to_excel(path + 'total_tail_data.xlsx', index = False)
 
-    send_email("随手记闪屏&首页运营位 CTR周报", mix_content, picture_attach_list, path + 'total_tail_data.xlsx')
+    send_email("卡牛闪屏&首页服务运营位 CTR周报", mix_content, picture_attach_list, path + 'total_tail_data.xlsx')
 
 
 
