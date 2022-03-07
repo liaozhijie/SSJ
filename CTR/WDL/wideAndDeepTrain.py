@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# @Author: jiabin
+# @Date  : 2019/05/17
 
 import tensorflow as tf
 import numpy as np
@@ -27,9 +29,9 @@ exportModel=True
 copy2Tfserving=True
 #use_log
 use_log=False
-#model path 
+#model path
 
-base_dir='/home/tico/zhijieliao/ssj_syyyw_ctr_wdl_v2'
+base_dir='/home/tico/zhijieliao/ssj_syyyw_ctr_wdl_emd'
 feature_config_path="%s/model_config/ssj_syyyw_feature_rename_v3"%(base_dir)
 cross_feature_config_path = "%s/model_config/ssj_cross_feature_config_v4_none"%(base_dir)
 
@@ -53,6 +55,13 @@ embedding_column = tf.feature_column.embedding_column
 indicator_column = tf.feature_column.indicator_column
 numeric_column = tf.feature_column.numeric_column
 #print('-*-'*30)
+#sequence columns
+sequence_numeric_column = tf.contrib.feature_column.sequence_numeric_column
+sequence_numeric_column = tf.feature_column.sequence_numeric_column
+sequence_input_layer = tf.contrib.feature_column.sequence_input_layer
+make_parse_example_spec = tf.feature_column.make_parse_example_spec
+SequenceFeatures = tf.keras.experimental.SequenceFeatures
+real_valued_column = tf.contrib.layers.real_valued_column
 
 cf = configparser.ConfigParser()
 
@@ -61,10 +70,15 @@ cf.read(feature_config_path)
 secs = cf.sections()
 
 continue_cols = []
+                  
 for f in secs:
-    if cf.get(f, "type") == 'continues': 
+    if cf.get(f, "type") == 'continues':
         continue_cols.append(f)
-#print(continue_cols)        
+#print(continue_cols)
+
+def _float_feature(value):
+    return tf.train.Feature(float_list=tf.train.FloatList(value=value))
+
 def get_contiues_col_para(data_file,continue_cols):
     print('-*-'*50)
     print('start reading data')
@@ -77,11 +91,7 @@ def get_contiues_col_para(data_file,continue_cols):
     for col in continue_cols:
         min_value = pd.to_numeric( pd_data[col]).min()
         max_value =  pd.to_numeric(pd_data[col]).max()
-        try:
-            lable,bins = pd.qcut( pd.to_numeric(pd_data[col]),30,retbins=True,duplicates='drop')
-        except:
-            print (pd.to_numeric(pd_data[col]))
-            sys.exit(-1)
+        lable,bins = pd.qcut( pd.to_numeric(pd_data[col]),30,retbins=True,duplicates='drop')
         contiues_col_para[col]['min']=min_value
         contiues_col_para[col]['max']=max_value
         contiues_col_para[col]['bins']=bins
@@ -91,7 +101,7 @@ contiues_col_para = get_contiues_col_para(train_data_file,continue_cols)
 
 def column_to_csv_defaults(cf):
         """parse columns to record_defaults param in tf.decode_csv func
-        Return: 
+        Return:
             OrderedDict {'feature name': [''],...}
         """
         csv_defaults = OrderedDict()
@@ -103,12 +113,14 @@ def column_to_csv_defaults(cf):
                     csv_defaults[f] = [0]
                 else:
                     csv_defaults[f] = ['']
+            elif cf.get(f, "type") == 'vocab_file_pre_train':
+                csv_defaults[f] = ['']
             else:
                     csv_defaults[f] = [0.0]  # 0.0 for float32
-        return csv_defaults  
+        return csv_defaults
 
 csv_defaults = column_to_csv_defaults(cf)
-    
+
 def parser(value,is_pred=False, field_delim='#', multivalue_delim=',',csv_defaults=csv_defaults):
     """Parse train and eval data with label
     Args:
@@ -120,7 +132,6 @@ def parser(value,is_pred=False, field_delim='#', multivalue_delim=',',csv_defaul
         value, record_defaults=list(csv_defaults.values()),
         field_delim=field_delim, use_quote_delim=False)
     features = dict(zip(csv_defaults.keys(), columns))
-#     print(features)
     for f, tensor in features.items():
         if 'need_split' in cf.options(f):  # split tensor
 
@@ -128,7 +139,7 @@ def parser(value,is_pred=False, field_delim='#', multivalue_delim=',',csv_defaul
         else:
             features[f] = tf.expand_dims(tensor, 0)  # change shape from () to (1,)
     labels = tf.equal(features.pop('label'), 1)
-    return features, labels    
+    return features, labels
     
     
 def input_fn(data_file, num_epochs, shuffle, batch_size,shuffer_size_train,compress_type=""):
@@ -152,11 +163,11 @@ def build_model_columns(feature_conf_cf,cross_cf_path):
     Build wide and deep feature columns from custom feature conf using tf.feature_column API
     wide_columns: category features + cross_features + [discretized continuous features]
     deep_columns: continuous features + category features(onehot or embedding for sparse features) + [cross_features(embedding)]
-    Return: 
+    Return:
         _CategoricalColumn and __DenseColumn instance in tf.feature_column API
     """
     def embedding_dim(dim):
-        
+
         """empirical embedding dim"""
 #         return np.ceil((1000**0.25))
         return int(np.power(2, np.ceil(np.log(dim**0.25))))
@@ -169,12 +180,32 @@ def build_model_columns(feature_conf_cf,cross_cf_path):
             return lambda x:tf.log(x+1)
         else:
             return None
+    def embedding_matrix(path):
+        embed_mat = np.loadtxt(path, delimiter=',')
+        return embed_mat
 
-#     feature_conf_cf = CONF.read_feature_conf()
-#     cross_feature_cf = CONF.read_cross_feature_conf()
-#     tf.logging.info('Total used feature class: {}'.format(len(feature_conf_dic)))
-#     tf.logging.info('Total used cross feature class: {}'.format(len(cross_feature_list)))
-
+    def load_init_embedding(word_path, embedding_path, embedding_dim, tensor_name, ckpt_name):
+        word_file = list(np.loadtxt(word_path, delimiter=','))
+        word_file = [str(int(i)) for i in word_file]
+        with open(base_dir+'/model_config/origid_file', 'w') as f:
+            f.write('\n'.join(word_file))
+        embedding_vector = np.loadtxt(embedding_path, delimiter=',', dtype=np.float32)
+        embeddings = tf.Variable(initial_value=embedding_vector, dtype=tf.float32)
+        init_op = tf.global_variables_initializer()
+        saver = tf.train.Saver({tensor_name: embeddings})
+        with tf.Session() as sess:
+            sess.run(init_op)
+            saver.save(sess, ckpt_name)
+        embedding_initializer = tf.contrib.framework.load_embedding_initializer(
+        ckpt_path=ckpt_name,
+        embedding_tensor_name=tensor_name,
+        new_vocab_size=len(word_file),
+        embedding_dim=embedding_dim,
+        old_vocab_file=base_dir+'/model_config/origid_file',
+        new_vocab_file=base_dir+'/model_config/origid_file'
+        )
+        return embedding_initializer
+    
     wide_columns = []
     deep_columns = []
     wide_dim = 0
@@ -186,7 +217,7 @@ def build_model_columns(feature_conf_cf,cross_cf_path):
     for feature in sections:
         f_type, f_tran, f_param = feature_conf_cf.get(feature, "type"),feature_conf_cf.get(feature, "transform"),feature_conf_cf.get(feature,"parameter")
         if f_type == 'category':
-            
+
             if f_tran == 'hash_bucket':
                 hash_bucket_size = int(f_param)
                 embed_dim = embedding_dim(hash_bucket_size)
@@ -225,7 +256,7 @@ def build_model_columns(feature_conf_cf,cross_cf_path):
 #                 deep_columns.append(indicator_column(col))
                 wide_dim += len(f_param)
 #                 deep_dim += len(f_param)
-            
+
             elif f_tran == 'vocab_file':
                 fc_path = f_param
                 vocabulary_size = len(open(fc_path).readlines())
@@ -244,12 +275,35 @@ def build_model_columns(feature_conf_cf,cross_cf_path):
                     initializer=None,
                     ckpt_to_load_from=None,
                     tensor_name_in_ckpt=None,
+                    tensor_name_in_ckpt=None,
                     max_norm=None,
                     trainable=True))
                     deep_dim += embed_dim
-#                 deep_columns.append(indicator_column(col))
                 wide_dim += vocabulary_size
-                
+                if feature == 'c01':
+                    emb_path = feature_conf_cf.get(feature, "parameter_emb")
+
+                    embed_dim = 20
+                    embedding_initializer_origid = load_init_embedding(fc_path, emb_path, embed_dim, 'origid_tensor', 'origid_embedding')
+                    deep_columns.append(embedding_column(col,
+                                                         dimension=embed_dim,
+                                                         combiner='sqrtn',
+                                                         initializer=embedding_initializer_origid,
+                                                         ckpt_to_load_from=None,
+                                                         tensor_name_in_ckpt=None,
+                                                         max_norm=None,
+                                                         trainable=True))
+                    wide_columns.append(embedding_column(col,
+                                                 dimension=embed_dim,
+                                                 combiner='sqrtn',
+                                                 initializer=embedding_initializer_origid,
+                                                 ckpt_to_load_from=None,
+                                                 tensor_name_in_ckpt=None,
+                                                 max_norm=None,
+                                                 trainable=True))
+                    deep_dim += embed_dim
+                    wide_dim += embed_dim
+
             elif f_tran == 'identity':
                 num_buckets = int(f_param)
                 col = categorical_column_with_identity(feature,
@@ -269,7 +323,7 @@ def build_model_columns(feature_conf_cf,cross_cf_path):
                 deep_dim += embed_dim
 #                 deep_dim += num_buckets
                 wide_dim += num_buckets
-                
+
         elif f_type == 'continues':
             if f_tran == 'bucket':
                 compute_boundaries = contiues_col_para[feature]['bins']
@@ -292,29 +346,53 @@ def build_model_columns(feature_conf_cf,cross_cf_path):
                     initializer=None,
                     ckpt_to_load_from=None,
                     tensor_name_in_ckpt=None,
+                    tensor_name_in_ckpt=None,
                     max_norm=None,
                     trainable=True))
                 deep_dim += embed_dim
                 wide_dim += len(boundaries)+1
-            else:
-                min_value = contiues_col_para[feature]['min']
-                max_value = contiues_col_para[feature]['max']
-                boundaries = contiues_col_para[feature]['bins']
-                if f_tran == 'log':
-                    normalizer_fn = normalizer_fn_builder(f_tran,min_value,max_value)
-                elif f_tran == 'minmax':
-                    normalizer_fn = normalizer_fn_builder(f_tran,min_value,max_value)
-                else:
-                    normalizer_fn = None
-                col= numeric_column(feature,
+            elif f_tran == 'value':
+                 col = numeric_column(feature,
                  shape=(1,),
                  default_value=0,  # default None will fail if an example does not contain this column.
                  dtype=tf.float32,
-                 normalizer_fn=normalizer_fn)
-                wide_columns.append(col)
-                wide_dim += 1
-                deep_columns.append(col)
-                deep_dim += 1
+                 normalizer_fn=log_fn)
+                 wide_columns.append(col)
+                 deep_columns.append(col)
+                 deep_dim +=1
+                 wide_dim +=1
+
+        elif f_type == 'vocab_file_pre_train':
+            fc_path = f_param
+            vocabulary_size = len(open(fc_path).readlines())
+            emb_path = feature_conf_cf.get(feature, "parameter_emb")
+            embed_dim = 20
+            embedding_initializer_click = load_init_embedding(fc_path, emb_path, embed_dim, 'click_tensor', 'click_embedding')
+            vocabulary_size = len(open(fc_path).readlines())
+            col = categorical_column_with_vocabulary_file(feature,
+                                                          vocabulary_file=fc_path,
+                                                          vocabulary_size=vocabulary_size,
+                                                          default_value=0,
+                                                          num_oov_buckets=0)  # len(vocab)+num_oov_buckets
+            deep_columns.append(embedding_column(col,
+                                                 dimension=embed_dim,
+                                                 combiner='sqrtn',
+                                                 initializer=embedding_initializer_click,
+                                                 ckpt_to_load_from=None,
+                                                 tensor_name_in_ckpt=None,
+                                                 max_norm=None,
+                                                 trainable=True))
+            wide_columns.append(embedding_column(col,
+                                                 dimension=embed_dim,
+                                                 combiner='sqrtn',
+                                                 initializer=embedding_initializer_click,
+                                                 ckpt_to_load_from=None,
+                                                 tensor_name_in_ckpt=None,
+                                                 max_norm=None,
+                                                 trainable=True))
+            deep_dim += embed_dim
+            wide_dim += embed_dim
+
 
     for cross_features_str in cross_feature_list:
         cf_list = []
@@ -387,7 +465,13 @@ def build_model_columns(feature_conf_cf,cross_cf_path):
 
 
     return wide_columns, deep_columns
-
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
 def export_model(feature_columns,export_dir):
     feature_spec = tf.feature_column.make_parse_example_spec(feature_columns)
     serving_input_receiver_fn = tf.estimator.export.build_parsing_serving_input_receiver_fn(feature_spec)
