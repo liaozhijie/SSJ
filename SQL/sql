@@ -1,0 +1,803 @@
+create table temp.ssj_click_seq_30 as select
+udid,concat_ws(',',collect_list(origid)) as click_seq , concat_ws(',',collect_list(clicktime)) as time_seq
+from
+(select *,row_number() over (distribute by udid sort by clicktime asc) from dw.bdl_bd_onlinead_clicklog where ymd>='{backtime}' and ymd < default.calc_date({back_num}) and lower(productname) like '%mymoney%' and positionid in ('SP','SSJSYYYW')) t
+group by udid
+
+
+select t1.udid,concat_ws(',',collect_list(t1.ymd_total_time)) as ymd_total_time from
+(select udid,concat(ymd,':',total_time) as ymd_total_time from dws.dws_ssj_udid_stay_leng_di where ymd >= default.calc_date(22)) t1
+group by t1.udid
+
+
+create table temp.ssj_user_planid_show_sequence as
+select t.udid,concat_ws(',',collect_list(t.planid_busitype)) as show_seq
+from
+(select udid,concat(planid,':',busitype) as planid_busitype from ods.bdl_bigdata_onlinead_viewlog v
+where ymd>='2021-02-25' and ymd <= '2021-03-03' and lower(productname) like '%mymoney%' and positionid='SP' and v.requestid in (
+select distinct requestid from ods.bdl_bigdata_onlinead_clientshowlog where ymd>='2021-02-25' and ymd <= '2021-03-03' and lower(productname) like '%mymoney%' and positionid='SP')
+) t
+group by t.udid;
+
+drop table if exists temp.test1;
+create table temp.test1 as
+select t1.positionid,t1.udid,count(*) as udid_count,count(distinct planid) / count(*) as planid_score,count(distinct busitype) / count(*) as busi_score
+from
+(
+select s.udid,s.positionid,s.planid,v.busitype
+from
+(select requestid,positionid,udid,planid,count(*) from ods.bdl_bigdata_onlinead_clientshowlog where ymd>='2021-02-25' and ymd <= '2021-03-03' and lower(productname) like '%mymoney%' and positionid in ('SP','SSJSYYYW','SSJLSYNEWYYW') group by requestid,positionid,udid,planid) s
+left join
+(select requestid,positionid,udid,planid,busitype,count(*) from ods.bdl_bigdata_onlinead_viewlog where ymd>='2021-02-25' and ymd <= '2021-03-03' and lower(productname) like '%mymoney%' and positionid in ('SP','SSJSYYYW','SSJLSYNEWYYW') group by requestid,positionid,udid,planid,busitype) v
+on s.requestid=v.requestid
+where v.busitype is not NULL
+) t1
+group by t1.positionid,t1.udid
+having count(*) > 1;
+
+drop table if exists temp.test2;
+create table temp.test2 as
+select
+positionid,avg(planid_score) as planid_score,avg(busi_score) as busi_score
+from temp.test1
+group by positionid;
+
+
+
+def timeSpase(input_map):
+    # input_map:
+    # "features": {
+    # "c1": "Android,ios",
+    # "c2": "MyMoney",
+    # "c5": "splash",
+    # "c6": "huawei",
+    # ........
+
+    input_map['c8'] = input_map['t1'].hour
+    input_map['c9'] = input_map['t1'].dayofweek
+    input_map.pop('t1')
+    return input_map
+
+drop table if exists temp.test1;
+create table temp.test1 as select * from (
+select positionid,busitype,count(*) as show_num from ods.bdl_bigdata_onlinead_viewlog v
+where ymd = '2021-04-23' and viewtime >='2021-04-23 16:00:00' and lower(productname) like '%mymoney%' and positionid in ('SSJSYYYW','SP') and v.requestid in
+(select distinct requestid from ods.bdl_bigdata_onlinead_clientshowlog where ymd='2021-04-23' and showtime >='2021-04-23 16:00:00' and lower(productname) like '%mymoney%' and
+positionid in ('SSJSYYYW','SP')) group by positionid,busitype order by positionid,busitype
+) t1 order by t1.positionid,t1.show_num;
+
+select sum(show_num) from temp.test1;
+
+drop table if exists temp.test2;
+create table temp.test2 as select * from (
+select positionid,busitype,count(*) as show_num from ods.bdl_bigdata_onlinead_viewlog v
+where ymd = '2021-04-23' and viewtime >='2021-04-23 16:00:00' and lower(productname) like '%mymoney%' and positionid in ('SP') and v.requestid in
+(select distinct requestid from ods.bdl_bigdata_onlinead_clientshowlog where ymd='2021-04-23' and showtime >='2021-04-23 16:00:00' and lower(productname) like '%mymoney%' and
+positionid in ('SP')) group by positionid,busitype order by positionid,busitype
+) t1 order by t1.positionid,t1.show_num;
+
+select sum(show_num) from temp.test2;
+
+
+drop table if exists temp.test1;
+create table temp.test1 as
+select v.busitype,ac.account_name,sum(show_num) as show_num from
+(select requestid,count(*) as show_num from ods.bdl_bigdata_onlinead_clientshowlog where ymd='2021-05-12' and lower(productname) like '%mymoney%' and positionid in ('SP')  group by requestid) s
+left join
+(select requestid,busitype,count(*) as view_num from ods.bdl_bigdata_onlinead_viewlog where ymd>='2021-05-08' and lower(productname) like '%mymoney%' and positionid in ('SP') group by requestid,busitype) v
+on s.requestid=v.requestid
+join
+(select * from ods.ods_splash_t_b_account where ymd ='2021-04-24') ac ON v.busitype = ac.id
+group by v.busitype,ac.account_name;
+
+select sum(show_num) from temp.test1;
+select * from (select account_name,(100*show_num / 2959804) as rate from temp.test1) t1 order by rate desc;
+
+select count(*) from ods.bdl_bigdata_onlinead_clientshowlog s where ymd='2021-04-23' and showtime >='2021-04-23 16:00:00' and lower(productname) like '%mymoney%' and positionid in ('SSJSYYYW','SP') and s.planid in (
+select distinct planid from ods.bdl_bigdata_onlinead_viewlog where ymd>='2021-04-20' and lower(productname) like '%mymoney%' and positionid in
+
+
+select * from
+(
+select s.ymd,sum(s.show_num) as show,sum(c.click_num) as click_num,sum(c.click_num)/sum(s.show_num) as ctr from
+(select ymd,count(*) as show_num from ods.bdl_bigdata_onlinead_clientshowlog where ymd>'2021-07-01' and lower(productname) like '%mymoney%' and positionid in ('SSJSYYYW') and origid=44659  group by ymd) s
+left join
+(select ymd,count(*) as click_num from ods.bdl_bigdata_onlinead_clicklog where ymd>'2021-07-01' and lower(productname) like '%mymoney%' and positionid in ('SSJSYYYW') and origid=44659 group by ymd) c
+on s.ymd=c.ymd
+group by s.ymd
+) tt
+order by ymd;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+drop table if exists temp.ssj_user_stay_time;
+create table temp.ssj_user_stay_time as
+select re.ymd,re.positionid,re.groupname,re.account_name,
+    count(re.udid) as total_show, sum(re.total_time) as total_time, sum(re.total_time)/count(re.udid) as avg_stay_time
+from (
+    select show.ymd, show.positionid, show.groupname, show.udid, show.account_name, avg(u.total_time) as total_time
+    from (
+        select s.ymd,s.udid,v.systemname,v.groupname,v.positionid,ac.account_name
+        from (
+            select ymd, requestid, udid,count(*)
+            from ods.bdl_bigdata_onlinead_clientshowlog
+            WHERE ymd >= '2021-06-04'
+            and ymd < default.calc_date(0)
+            AND lower(productname) like '%mymoney%'
+            group by ymd, requestid, udid
+        ) s
+        left join (
+            SELECT requestid as v_requestid, systemname, udid, busitype, positionid, groupname, count(*)
+            FROM ods.bdl_bigdata_onlinead_viewlog
+            WHERE ymd >= default.calc_date(30)
+            AND lower(productname)  like '%mymoney%'
+            group by requestid,systemname,udid,busitype,positionid,groupname
+        ) v on s.requestid=v.v_requestid
+        left join
+        (select * from ods.ods_splash_t_b_account where ymd>'0') ac on v.busitype = ac.id
+    ) show
+    left join (
+        select bhvr_date as ymd,udid,total_time
+        from dws.dws_ssj_udid_stay_leng_di
+        where bhvr_date >= '2021-06-04'
+        and bhvr_date< default.calc_date(0)
+        and total_time < 3600
+        and udid not like '%mac%'
+        and bhvr_date > '0'
+        and ymd > '0'
+    ) u on show.ymd=u.ymd and show.udid=u.udid
+    group by show.ymd,show.positionid,show.groupname,show.udid,show.account_name
+) re
+group by re.ymd,re.positionid,re.groupname,re.account_name;
+
+
+drop table if exists temp.ssj_user_stay_time_1;
+create table temp.ssj_user_stay_time_1 as
+select groupname,account_name,sum(total_show) as total_show, sum(total_time) as total_time, sum(total_time)/(sum(total_show) * 60) as avg_stay_time
+from temp.ssj_user_stay_time
+where positionid in ("SP","SSJSYYYW") and groupname in ("SSJ_WDL_V2","SSJ_WDL_SYYYW_DJ")
+group by groupname,account_name
+order by groupname;
+
+drop table if exists temp.ssj_user_stay_time_2;
+create table temp.ssj_user_stay_time_2 as
+select t1.*,t2.avg_stay_time as avg_stay_time_ori
+from
+(select * from temp.ssj_user_stay_time_1 where groupname='SSJ_WDL_SYYYW_DJ') t1
+left join
+(select * from temp.ssj_user_stay_time_1 where groupname='SSJ_WDL_V2') t2
+on t1.account_name = t2.account_name;
+
+
+
+--新模型各版块的时长增减情况对比
+drop table if exists temp.ssj_user_stay_time_block;
+create table temp.ssj_user_stay_time_block as
+select t1.groupname,d.account_name,avg((case when t2.total_time is NULL then 0 else t2.total_time end)) as total_time from
+(select udid,groupname,count(*) from ods.bdl_bigdata_onlinead_viewlog where ymd >= '2021-06-04' and ymd < default.calc_date(0)  and lower(productname) like '%mymoney%' and positionid in ('SSJSYYYW','SP') and groupname in ("SSJ_WDL_V2","SSJ_WDL_SYYYW_DJ") group by udid,groupname) t1
+left join
+(select a.*,b.busitype from (select * from intelli_algo.ssj_udid_block_stay_time where ymd >= '2021-06-04' and ymd < default.calc_date(0) and total_time <1000) a left join intelli_algo.ssj_busitype_to_time_section b on a.block=b.time_section) t2
+on t1.udid=t2.udid
+left join
+(select * from ods.ods_splash_t_b_account where ymd>'0') d
+on d.id=t2.busitype
+group by t1.groupname,d.account_name;
+
+
+--ods.bdl_bigdata_onlinead_clicklog
+drop table if exists temp.ssj_user_stay_time_click;
+create table temp.ssj_user_stay_time_click as
+select re.ymd,re.positionid,re.groupname,
+    count(re.udid) as total_show, sum(u.total_time) as total_time, sum(u.total_time)/count(re.udid) as avg_stay_time
+from (
+        select s.ymd,s.udid,v.groupname,v.positionid,ac.account_name
+        from (
+            select ymd, requestid, udid,count(*)
+            from ods.bdl_bigdata_onlinead_clicklog
+            WHERE ymd >= '2021-05-20'
+            and ymd < default.calc_date(0)
+            AND lower(productname) like '%mymoney%'
+            group by ymd, requestid, udid
+        ) s
+        left join (
+            SELECT requestid as v_requestid, systemname, udid, busitype, positionid, groupname, count(*)
+            FROM ods.bdl_bigdata_onlinead_viewlog
+            WHERE ymd >= '2021-05-20'
+            AND lower(productname)  like '%mymoney%'
+            group by requestid,systemname,udid,busitype,positionid,groupname
+        ) v on s.requestid=v.v_requestid
+        left join
+        (select * from ods.ods_splash_t_b_account where ymd>'0') ac on v.busitype = ac.id
+    ) re
+    left join (
+        select bhvr_date as ymd,udid,total_time
+        from dws.dws_ssj_udid_stay_leng_di
+        where bhvr_date >= '2021-05-20'
+        and bhvr_date< default.calc_date(0)
+        and total_time < 3600
+        and udid not like '%mac%'
+        and bhvr_date > '0'
+        and ymd > '0'
+    ) u on re.ymd=u.ymd and re.udid=u.udid
+group by re.ymd,re.positionid,re.groupname;
+
+
+drop table if exists temp.time_model_analy;
+create table temp.time_model_analy as
+select t4.account_name,t4.show,t5.total_time,t6.avg_time,t5.has_value_num,t6.total_show_num,t7.avg_stay_time,t7.avg_stay_time_ori,t8.total_time/60 as new_total_time,t9.total_time/60 as old_total_time, t10.new_click_stay_time, t11.old_click_stay_time from
+(
+select v.busitype,a.account_name,sum(s.show_num) as show,sum(c.click_num) as click_num,sum(c.click_num)/sum(s.show_num) as ctr from
+(select requestid,count(*) as show_num from ods.bdl_bigdata_onlinead_clientshowlog where ymd >= '2021-06-04' and ymd < default.calc_date(0)  and lower(productname) like '%mymoney%' and positionid in ('SSJSYYYW','SP') and groupname='SSJ_WDL_SYYYW_DJ'  group by requestid) s
+left join
+(select requestid,count(*) as click_num from ods.bdl_bigdata_onlinead_clicklog where ymd >= '2021-06-04' and ymd < default.calc_date(0)  and lower(productname) like '%mymoney%' and positionid in ('SSJSYYYW','SP') group by requestid) c
+on s.requestid=c.requestid
+join
+(select requestid,busitype,count(*) as view_num from ods.bdl_bigdata_onlinead_viewlog where ymd >= '2021-06-04' and ymd < default.calc_date(0)  and lower(productname) like '%mymoney%' and positionid in ('SSJSYYYW','SP') group by requestid,busitype) v
+on s.requestid=v.requestid
+left join
+(select * from ods.ods_splash_t_b_account where ymd>'0') a on a.id=v.busitype
+group by v.busitype,a.account_name
+) t4
+left join
+(select accountid,avg(total_time) as total_time,count(*) as has_value_num from temp.ssj_wdl_stay_time_model_data_v2 where total_time >5 group by accountid) t5
+on t4.busitype = t5.accountid
+left join
+(select accountid,avg(total_time) as avg_time, count(*) as total_show_num from temp.ssj_wdl_stay_time_model_data_v2 group by accountid) t6
+on t4.busitype = t6.accountid
+left join
+temp.ssj_user_stay_time_2 t7
+on t4.account_name=t7.account_name
+left join
+(select * from temp.ssj_user_stay_time_block where groupname='SSJ_WDL_SYYYW_DJ') t8
+on t4.account_name=t8.account_name
+left join
+(select * from temp.ssj_user_stay_time_block where groupname='SSJ_WDL_V2') t9
+on t4.account_name=t9.account_name
+left join
+(select avg_stay_time as new_click_stay_time,account_name from temp.ssj_user_stay_time_click where groupname = 'SSJ_WDL_SYYYW_DJ') t10
+on t4.account_name=t10.account_name
+left join
+(select avg_stay_time as old_click_stay_time,account_name from temp.ssj_user_stay_time_click where groupname = 'SSJ_WDL_V2') t11
+on t4.account_name=t11.account_name
+order by t4.show;
+
+
+
+
+
+drop table if exists temp.ssj_user_stay_time_30;
+create table temp.ssj_user_stay_time_30 as
+select re.ymd,re.positionid,re.groupname,re.account_name,
+    count(re.udid) as total_show, sum(u.total_time) as total_time, sum(u.total_time)/count(re.udid) as avg_stay_time
+from (
+        select s.ymd,s.udid,v.groupname,v.positionid,ac.account_name
+        from (
+            select ymd, requestid, udid,count(*)
+            from ods.bdl_bigdata_onlinead_clientshowlog
+            WHERE ymd >= '2021-05-30'
+            and ymd < default.calc_date(0)
+            AND lower(productname) like '%mymoney%'
+            group by ymd, requestid, udid
+        ) s
+        left join (
+            SELECT requestid as v_requestid, systemname, udid, busitype, positionid, groupname, count(*)
+            FROM ods.bdl_bigdata_onlinead_viewlog
+            WHERE ymd >= '2021-05-30'
+            AND lower(productname)  like '%mymoney%'
+            group by requestid,systemname,udid,busitype,positionid,groupname
+        ) v on s.requestid=v.v_requestid
+        left join
+        (select * from ods.ods_splash_t_b_account where ymd>'0') ac on v.busitype = ac.id
+    ) re
+    left join (
+        select bhvr_date as ymd,udid,total_time
+        from dws.dws_ssj_udid_stay_leng_di
+        where bhvr_date >= '2021-05-30'
+        and bhvr_date< default.calc_date(0)
+        and total_time < 3600
+        and udid not like '%mac%'
+        and bhvr_date > '0'
+        and ymd > '0'
+    ) u on re.ymd=u.ymd and re.udid=u.udid
+group by re.ymd,re.positionid,re.groupname,re.account_name;
+
+
+
+drop table if exists temp.ssj_temp_ctr;
+create table temp.ssj_temp_ctr as
+select * from
+(
+select s.ymd,s.groupname,sum(s.show_num) as show,sum(c.click_num) as click_num,sum(c.click_num)/sum(s.show_num) as ctr from
+(select ymd,positionid,groupname,count(*) as show_num from ods.bdl_bigdata_onlinead_clientshowlog where  ymd >= '2021-06-10' and ymd < default.calc_date(0) and lower(productname) like '%mymoney%' and positionid in ("SP","SSJSYYYW") and groupname in ('SSJ_WDL_SYYYW_DJ','SSJ_WDL_V2') group by ymd,positionid,groupname) s
+left join
+(select ymd,positionid,groupname,count(*) as click_num from ods.bdl_bigdata_onlinead_clicklog where  ymd >= '2021-06-10' and ymd < default.calc_date(0) and lower(productname) like '%mymoney%' and positionid in ("SP","SSJSYYYW") and groupname in ('SSJ_WDL_SYYYW_DJ','SSJ_WDL_V2') group by ymd,positionid,groupname) c
+on
+s.ymd=c.ymd and s.positionid=c.positionid and s.groupname=c.groupname
+group by s.ymd,s.groupname
+) tt;
+
+drop table if exists temp.ssj_total_time_ctr_analy;
+create table temp.ssj_total_time_ctr_analy as
+select t1.*,t3.avg_click_stay_time,t2.ctr from
+(select ymd,positionid,groupname,sum(total_time)/(sum(total_show)*60) as avg_stay_time from temp.ssj_user_stay_time_30 where positionid in ("SP","SSJSYYYW") and groupname in ('SSJ_WDL_SYYYW_DJ','SSJ_WDL_V2') group by ymd,positionid,groupname order by ymd,positionid,groupname) t1
+left join
+temp.ssj_temp_ctr t2
+on t1.ymd=t2.ymd and t1.positionid=t2.positionid and t1.groupname=t2.groupname
+left join
+(select ymd,positionid,groupname,sum(total_time)/(sum(total_show)*60) as avg_click_stay_time from temp.ssj_user_stay_time_click where positionid in ("SP","SSJSYYYW") and groupname in ('SSJ_WDL_SYYYW_DJ','SSJ_WDL_V2') group by ymd,positionid,groupname order by ymd,positionid,groupname) t3
+on t1.ymd=t3.ymd and t1.positionid=t3.positionid and t1.groupname=t3.groupname;
+
+
+
+select v.busitype,ac.account_name,count(*) from
+(select requestid,count(*) from ods.bdl_bigdata_onlinead_clientshowlog where ymd > '2021-06-04' and lower(productname)  like '%mymoney%' and positionid in ('SP','SSJSYYYW') and groupname='SSJ_WDL_V2' group by requestid) s
+left join
+(select requestid,busitype,count(*)
+from ods.bdl_bigdata_onlinead_viewlog
+where ymd > '2021-06-04' and lower(productname)  like '%mymoney%' and positionid in ('SP','SSJSYYYW') and groupname='SSJ_WDL_V2' group by requestid,busitype) v
+on s.requestid=v.requestid
+left join
+(select * from ods.ods_splash_t_b_account where ymd>'0') ac
+on v.busitype = ac.id
+where v.busitype is not NULL
+group by v.busitype,ac.account_name;
+
+
+select show.accountid,ac.account_name,avg(show.total_time)-5 from
+(select * from
+temp.ssj_wdl_stay_time_model_data_v2 t
+where t.udid in
+(select distinct udid from ods.bdl_bigdata_onlinead_clientshowlog
+where ymd > '2021-06-15' and lower(productname)  like '%mymoney%' and positionid in ('SP','SSJSYYYW') and groupname='SSJ_WDL_V2')
+and total_time > 5
+) show
+left join
+(select * from ods.ods_splash_t_b_account where ymd>'0') ac
+on show.accountid = ac.id
+group by show.accountid,ac.account_name;
+
+
+df=pd.DataFrame()
+df['groupname'] = []
+df['用户时长（点击）'] = []
+df['ymd'] = []
+for v in s.split('\n'):
+    i = v.split('|')
+    if len(i) > 1:
+        f1 = pd.DataFrame({'ymd':[i[1]],'groupname':[i[3]],'用户时长（点击）':[float(i[4])]})
+        df=df.append(f1)
+
+sns.lineplot(x=df['ymd'],y=df['用户时长（点击）'],hue=df['groupname'])
+
+
+
+
+
+
+drop table if exists temp.ssj_logid_succeed;
+create table temp.ssj_logid_succeed as
+select t1.ymd,t1.udid,t1.logid,t1.request_time,(case when t2.logid is NULL then 0 else 1 end) as if_succeed from
+(
+select s.ymd,s.udid,s.logid,row_number() over (distribute by s.ymd,s.udid sort by s.requesttime asc) as request_time from
+(select ymd,udid,logid,requesttime,count(*) from ods.bdl_bigdata_online_ad
+where ymd > '2021-07-20' and lower(productname)  like '%mymoney%' and positionlist='SSJSYYYW' group by ymd,udid,logid,requesttime) s
+) t1
+left join
+(
+select ymd,udid,logid ,count(*) from ods.bdl_bigdata_onlinead_viewlog where ymd > '2021-07-20' and lower(productname)  like '%mymoney%' and positionid='SSJSYYYW' group by ymd,udid,logid
+) t2
+on t1.ymd=t2.ymd and t1.udid=t2.udid and t1.logid=t2.logid;
+
+
+create table temp.ssj_ad_logid_ctr as select tt.ymd,tt.udid,tt.logid,sum(tt.show) as show,sum(tt.click) as click from
+(
+select t1.ymd,t1.udid,t1.logid,(case when t2.requestid is NULL then 0 else 1 end) as show,(case when t3.requestid is NULL then 0 else 1 end) as click from
+
+(
+select ymd,udid,requestid,count(*) from ods.bdl_bigdata_onlinead_clientshowlog where ymd > '2021-07-20' and lower(productname)  like '%mymoney%' and positionid='SP' group by ymd,udid,requestid
+) t2
+left join
+(
+select ymd,udid,requestid,count(*) from ods.bdl_bigdata_onlinead_clicklog where ymd > '2021-07-20' and lower(productname)  like '%mymoney%' and positionid='SP' group by ymd,udid,requestid
+) t3
+on t3.ymd=t2.ymd and t3.udid=t2.udid and t3.requestid=t2.requestid
+join
+(
+select ymd,udid,logid,requestid ,count(*) from ods.bdl_bigdata_onlinead_viewlog where ymd > '2021-07-20' and lower(productname)  like '%mymoney%' and positionid='SP' group by ymd,udid,logid,requestid
+) t1
+on t1.ymd=t2.ymd and t1.udid=t2.udid and t1.requestid=t2.requestid
+) tt
+group by tt.ymd,tt.udid,tt.logid;
+
+
+select tt.request_time,sum(tt.if_succeed) as succeed_num,count(tt.if_succeed) as requestid_num, sum(tt.if_succeed)/count(tt.if_succeed) as succeed_rate,   sum(tt.click)/sum(tt.show) as ctr  from
+(
+select * from temp.ssj_logid_succeed t1
+left join
+temp.ssj_ad_logid_ctr t2
+on t1.ymd=t2.ymd and t1.udid=t2.udid and t1.logid=t2.logid
+) tt
+where request_time < 15
+group by tt.request_time
+order by request_time;
+
+select week, day, position_id as positionid, system_name as systemname, if(group_name='LM-TT','LM-TT(穿山甲)','LM-YLH(优量汇)') as account_name,
+        sum(show.show) as show, count(click.click) as click, count(close.close) as close
+    from (
+        select
+            case when ymd=default.calc_date({_1}) then 'last1' when ymd=default.calc_date({_2}) then 'last2' end as day,
+            case when ymd>=default.calc_date({_7}) then 'last1' when ymd<default.calc_date({_7}) then 'last2' end as week,
+            ymd, position_id, system_name, group_name, request_id,
+            count(*) as show
+        from ods.bdl_bigdata_ad_outer_show_fodder
+        WHERE ymd between default.calc_date({_14}) and default.calc_date({_1})
+        group by ymd, position_id, system_name, group_name, request_id
+    ) show
+    left join (
+        select ymd, request_id, count(*) as click
+        from ods.bdl_bigdata_ad_outer_click_fodder
+        where ymd between default.calc_date({_14}) and default.calc_date({_1})
+        group by ymd, request_id
+    ) click on show.ymd=click.ymd and show.request_id=click.request_id
+    left join (
+        select ymd, request_id, count(*) as close
+        from ods.bdl_bigdata_ad_outer_close_fodder
+        where ymd between default.calc_date({_14}) and default.calc_date({_1})
+        group by ymd, request_id
+    ) close on show.ymd=close.ymd and show.request_id=close.request_id
+    group by week, day, position_id, system_name, group_name
+
+
+
+
+select avg(open_time) from
+(
+select ymd,udid,count() as open_time from ods.bdl_mymoney_operations where ymd > '2021-07-20' and lower(productname)  like '%mymoney%' and aoperation='随手记_启动' group by ymd,udid
+) t;
+
+
+create table temp.test1 as
+select ymd,udid,concat(
+(case when life_time > 0 then life_time else 0 end),',',
+(case when loan_time is NULL then 0 else loan_time end),',',
+(case when bk_time is NULL then 0 else bk_time end),',',
+(case when fin_time is NULL then 0 else fin_time end),',',
+(case when shop_time is NULL then 0 else shop_time end),',',
+(case when college_time is NULL then 0 else college_time end),',',
+(case when forum_time is NULL then 0 else forum_time end),',',
+(case when prod_time is NULL then 0 else prod_time end)
+) as time_str,
+"shenghuo,daikuan,banka,licai,zhidegou,caishangxueyuan,shequ,chanpinyunying" as block_list
+from dwd.dwd_ssj_udid_time_leng_buss_df where ymd >= default.calc_date(15);
+
+
+
+
+
+insert into
+temp.ssj_udid_combine (udid)
+select distinct udid from ods.bdl_bigdata_ad_outer_show_fodder t1
+where ymd >= '2021-10-07' and ymd <= '2021-10-13' and position_id='SSJSYYYW' and t1.udid not in (select udid from temp.ssj_udid_combine);
+
+
+select s.ymd,s.udid,row_number() over (distribute by s.ymd,s.udid sort by s.showtime asc) as request_time from
+(select ymd,udid,showtime,count(*) from ods.bdl_bigdata_onlinead_clientshowlog
+where ymd >= '2021-10-07' and ymd <= '2021-10-13' and lower(productname)  like '%mymoney%' and positionid='SSJSYYYW' group by ymd,udid,showtime) s limit 50
+
+
+create table temp.ssj_udid_show_count as
+select t1.udid, t2.ymd as inner_ymd,t2.show_num as inner_show_num,t3.ymd as tt_ymd,t3.show_num as tt_show_num,t4.ymd as ylh_ymd,t4.show_num as ylh_show_num
+from temp.ssj_udid_combine t1
+left join
+(select ymd,udid,count(distinct requestid) as show_num from ods.bdl_bigdata_onlinead_clientshowlog
+where ymd >= '2021-10-07' and ymd <= '2021-10-13' and lower(productname)  like '%mymoney%' and positionid='SSJSYYYW' group by ymd,udid) t2
+on t1.udid=t2.udid
+left join
+(select ymd,udid,count(distinct request_id) as show_num from ods.bdl_bigdata_ad_outer_show_fodder
+where ymd >= '2021-10-07' and ymd <= '2021-10-13' and position_id='SSJSYYYW' and group_name='LM-TT' group by ymd,udid) t3
+on t1.udid=t3.udid
+left join
+(select ymd,udid,count(distinct request_id) as show_num from ods.bdl_bigdata_ad_outer_show_fodder
+where ymd >= '2021-10-07' and ymd <= '2021-10-13' and position_id='SSJSYYYW' and group_name='LM-YLH' group by ymd,udid) t4
+on t1.udid=t4.udid
+
+select t1.ylh_ymd,t1.ylh_show_num,count(distinct t1.udid) from
+(select udid,ylh_ymd,(case when ylh_show_num is NULL then 0 when ylh_show_num >=11 then 11 else ylh_show_num end) ylh_show_num from temp.ssj_udid_show_count
+where ylh_ymd is not NULL) t1
+group by t1.ylh_ymd,t1.ylh_show_num order by t1.ylh_ymd,t1.ylh_show_num;
+
+drop table temp.test1;
+create table temp.test1 as
+select ymd,udid,count(distinct requestid) as show_num from ods.bdl_bigdata_onlinead_clientshowlog
+where ymd >= '2021-10-07' and ymd <= '2021-10-13' and lower(productname)  like '%mymoney%' and positionid='SSJSYYYW' group by ymd,udid;
+
+insert into temp.test1 (ymd,udid,show_num)
+select ymd,udid,count(distinct request_id) as show_num from ods.bdl_bigdata_ad_outer_show_fodder
+where ymd >= '2021-10-07' and ymd <= '2021-10-13' and position_id='SSJSYYYW' group by ymd,udid;
+
+select t1.ymd,t1.show_num,count(distinct t1.udid) as udid_num from
+(select ymd,udid,(case when sum(show_num) >=11 then 11 else sum(show_num) end) as show_num from temp.test1 group by ymd,udid) t1
+group by t1.ymd,t1.show_num order by t1.ymd,t1.show_num;
+
+
+
+select get_json_object(modelval,'$.s_t') s_t from ods.bdl_bigdata_online_ad where ymd='2021-11-01' and lower(productname)  like '%mymoney%' and positionlist='SSJSYYYW' and length(bookid)=18 and udid='androidId-4ce62c82f13d0dff' limit 10;
+
+select get_json_object(modelval,'$.r') r from ods.bdl_bigdata_online_ad where ymd='2021-11-01' and lower(productname)  like '%mymoney%' and positionlist='SSJSYYYW' and length(bookid)=18 and udid='androidId-4ce62c82f13d0dff' limit 10;
+
+
+
+select t.cate_name, t.num,t.money from
+(
+select cate_name,count(distinct trans_id) as num,avg(amt) as money
+from
+    dws.dws_ssj_jz_trans_wt_di
+where
+    to_date(substr(sync_time,1,10))>=default.calc_date("2021-11-12", 180)
+and to_date(substr(sync_time,1,10))<default.calc_date("2021-11-15", 1)
+and default.is_notempty(cate_name) and default.is_notempty(suid)
+and ymd>=default.calc_date("2021-11-12", 180) and ymd<default.calc_date("2021-11-15", 1)
+and to_date(substr(trans_time,1,10))>=default.calc_date("2021-11-12", 180)
+and to_date(substr(trans_time,1,10))<default.calc_date("2021-11-15", 1)
+and book_mkt_name="装修账本"
+and trans_type='支出'
+and prnt_cate_name in ('装修其他费用','装修材料费','装修人工费','装饰品','家具\\设备')
+and cate_name not in ("地板","电话电视及网络线路","木材","照明灯具","辅助材料","电力改造材料","防水材料","乳胶漆材料","吊顶","水路改造材料","地砖","门窗","管理费","油漆工","税金","木工","杂工","电工","水工","扇灰工","泥瓦工","装修餐食招待","装修验收费","装修期住宿费","装修交通运输","装修杂费","室内环境检测费","窗帘\\门帘","屏风","花草植物","地毯","其他装饰品","装饰字画","其他家具","客厅家具","卫浴设备","卧室家具","厨房设备","书房家具","餐厅家具","阳台家具")
+group by
+    cate_name
+) t
+order by t.num desc limit 50;
+
+
+select t.prnt_cate_name, t.num,t.money from
+(
+select prnt_cate_name,count(distinct trans_id) as num,avg(amt) as money
+from
+    dws.dws_ssj_jz_trans_wt_di
+where
+    to_date(substr(sync_time,1,10))>=default.calc_date("2021-12-16", 180)
+and to_date(substr(sync_time,1,10))<default.calc_date("2021-12-16", 1)
+and default.is_notempty(cate_name) and default.is_notempty(suid)
+and ymd>=default.calc_date("2021-12-16", 180) and ymd<default.calc_date("2021-12-16", 1)
+and to_date(substr(trans_time,1,10))>=default.calc_date("2021-12-16", 180)
+and to_date(substr(trans_time,1,10))<default.calc_date("2021-12-16", 1)
+and trans_type='支出'
+and book_name = '培训生意账'
+and suid in (select suid from temp.ssj_jiaoyu_suid)
+group by prnt_cate_name
+) t
+order by t.num desc limit 50;
+
+
+
+select * from
+(
+select udid,count(distinct ymd) as show_num from ods.bdl_bigdata_onlinead_clientshowlog where ymd > '2021-12-01'  and lower(productname) like '%mymoney%' and origid=20098 group by udid
+) t1
+order by t1.show_num desc
+limit 50;
+
+select * from
+(
+select ymd,showtime,origid,planid from ods.bdl_bigdata_onlinead_clientshowlog where ymd > '2021-12-01'  and lower(productname) like '%mymoney%' and positionid = 'SP' and udid='androidId-6f10d01f236c159b'
+) t1
+order by ymd,showtime asc
+limit 50;
+
+
+udid=androidId-51b65e0698b1d53d,androidId-6f10d01f236c159b
+origid=20098
+planid=112524
+
+select * from
+(
+select ymd,requesttime,positionlist,get_json_object(modelval,'$.e') as modelval
+from ods.bdl_bigdata_online_ad
+where ymd>'2022-01-05'
+AND lower(productname) like '%mymoney%'
+and udid='androidId-01b6637b36a855a4'
+) t1
+where t1.modelval like '%109461%'
+order by ymd,requesttime asc;
+
+select ymd,udid,planid,origid,showtime
+from ods.bdl_bigdata_onlinead_clientshowlog
+where udid='androidId-01b6637b36a855a4'
+and origid=19731 and ymd > '2022-01-05'
+order by ymd;
+
+
+select * from
+(
+select ymd,requesttime,positionlist,get_json_object(modelval,'$.e') as modelval
+from ods.bdl_bigdata_online_ad
+where ymd>'2022-01-05'
+and positionlist ="SP"
+AND lower(productname) like '%mymoney%'
+and udid='androidId-01b6637b36a855a4'
+) t1
+order by ymd,requesttime asc;
+
+androidId-74349a615f9bf664, deviceId-865540048146913
+
+
+drop table temp.test1;
+create table temp.test1 as select concat_ws('',collect_list(t1.modelval)) as v_list from (
+select get_json_object(modelval,'$.e') as modelval
+from ods.bdl_bigdata_online_ad
+where ymd>'2022-01-05'
+and positionlist ="SP"
+and abtestres not like '%SSJ_WDL_V2%'
+AND lower(productname) like '%mymoney%'
+) t1
+;
+
+
+table1 = spark.table("temp.test1").collect()
+s=table1[0][0]
+s=s.replace('][',',').replace('"','').strip('[').strip(']')
+l1=[]
+for i in s.split(','):
+    if float(i.split('_')[2]) < 5000:
+        l1.append(float(i.split('_')[2]))
+
+np.average(np.array(l1))
+
+def save_df(string):
+    name = []
+    num=[]
+    money = []
+    for i in string.split("\n"):
+        v_list = i.replace(' ','').split("|")
+        name.append(v_list[1])
+        num.append(v_list[2])
+        money.append(int(float(v_list[3])))
+    df = pd.DataFrame()
+    df['name'] = name
+    df['num'] = num
+    df['money'] = money
+    #df['rate'] = [str('%.2f' % float(i)) + '%' for i in (100*np.array(num) / sum(num))]
+
+    df.to_csv("C:/Users/HP/Desktop/df.csv", index=False)
+
+
+
+SELECT
+    ymd, productname, titletype, accountid, account_name, taskname,
+    sum(push) as push,
+    sum(arrive) as arrive,
+    sum(click) as click
+FROM (
+    SELECT ymd, messageid,
+        COUNT(DISTINCT (IF (eventType = '30', token, NULL))) AS push,
+        COUNT(DISTINCT (IF (eventType = '40', token, NULL))) AS arrive,
+        COUNT(DISTINCT (IF (eventType = '100',token, NULL))) AS click
+    FROM ods.bdl_message_messagelog
+    where ymd between default.calc_date(2) and default.calc_date(1)
+    GROUP BY ymd, messageid
+) log
+JOIN (
+    select messageid, taskid, productname
+    from (
+        select concat('70', messageid) as messageid, taskid,
+            case when lower(productname) like '%mymoney%' then '随手记' else '卡牛' end as productname
+        from ods.bdl_bigdata_notification_push_record
+        where ymd between default.calc_date(2) and default.calc_date(1)
+    ) t
+    group by messageid, taskid, productname
+) record
+ON log.messageid = record.messageid
+left join (
+    SELECT taskid, titletype
+    FROM ods.ods_splash_t_msg_content
+    where ymd = default.calc_date(1)
+    group by taskid, titletype
+) content
+ON record.taskid = content.taskid
+left join (
+    SELECT taskid, accountid, tasknamez
+    FROM ods.ods_splash_t_task_details
+    where ymd = default.calc_date(1)
+    group by taskid, accountid, taskname
+) details
+ON record.taskid = details.taskid
+left join (
+    SELECT id, account_name
+    FROM ods.ods_splash_t_b_account
+    where ymd = default.calc_date(1)
+    group by id, account_name
+) account
+ON details.accountid = account.id
+group by ymd, productname, titletype, accountid, account_name, taskname
+order by ymd, productname, titletype, accountid, account_name, taskname
+
+
+select * from
+(
+select udid,count(*) as shownum,count(distinct showtime) as showtime_num from
+ods.bdl_bigdata_onlinead_clientshowlog
+where  ymd='2022-01-21' and lower(productname) like '%mymoney%' and positionid='SP'  and showtime > '2022-01-21 16:30:00'
+group by udid
+)t
+order by t.showtime_num desc
+limit 10;
+
+select udid,showtime from ods.bdl_bigdata_onlinead_clientshowlog where ymd='2022-01-21' and udid='androidId-035c04f0e945997d'
+and positionid='SP' and lower(productname) like '%mymoney%' order by showtime;
+
+
+
+create table temp.test2 as
+select tt.ymd,tt.positionid,tt.position_id,tt.block,count(distinct udid) as udid_num_at_block, sum(inner_show_num) as inner_show_num, sum(outer_show_num) as outer_show_num
+from
+(
+select t1.ymd,t1.udid,t2.positionid,t3.position_id,(case when t1.open_times <  11 then t1.open_times else "11+" end) as block,(case when t2.show_num is NULL then 0 else t2.show_num end) as inner_show_num, (case when t3.show_num is NULL then 0 else t3.show_num end) as outer_show_num
+from
+temp.test1_open_time t1
+left join
+(select ymd,udid,positionid,count(distinct requestid) as show_num from ods.bdl_bigdata_onlinead_clientshowlog
+where ymd >= '2022-01-22' and ymd < '2022-02-23' and lower(productname)  like '%mymoney%' and positionid in ("SSJSYYYW")  group by ymd,udid,positionid
+) t2
+on t1.ymd=t2.ymd and t1.udid=t2.udid
+left join
+(
+select ymd,udid,position_id,count(distinct request_id) as show_num from ods.bdl_bigdata_ad_outer_show_fodder
+where ymd >= '2022-01-22' and ymd < '2022-02-23' and group_name in ('LM-TT','LM-YLH') and position_id='SSJSYYYW' group by ymd,udid,position_id
+) t3
+on t1.ymd=t3.ymd and t1.udid=t3.udid
+) tt
+group by tt.ymd,tt.positionid,tt.position_id,tt.block
+order by tt.ymd,tt.positionid,tt.position_id,tt.block
+
+
+
+def save_df(string):
+    ymd = []
+    block = []
+    inner_num = []
+    outer_num = []
+    for i in string.split("\n"):
+        v_list = i.replace(' ', '').split("|")
+        ymd.append(v_list[1])
+        block.append(v_list[4])
+        inner_num.append(int(float(v_list[6])))
+        outer_num.append(int(float(v_list[7])))
+    df = pd.DataFrame()
+    df['ymd'] = ymd
+    df['block'] = block
+    df['inner_num'] = inner_num
+    df['outer_num'] = outer_num
+    df = df.groupby(['ymd', 'block'], as_index=False).sum()
+    df['rate'] = ['%.2f%%' % (i * 100) for i in df['inner_num'] / (df['inner_num'] + df['outer_num'])]
+    df1 = pd.DataFrame([])
+    df1['col0-5'] = list(df[df['block'] == '0-5']['rate'])
+    df1['col5-10'] = list(df[df['block'] == '5-10']['rate'])
+    df1['col10-&'] = list(df[df['block'] == '10-&']['rate'])
+    df1['0-5inner_num'] = list(df[df['block'] == '0-5']['inner_num'])
+    df1['0-5outer_num'] = list(df[df['block'] == '0-5']['outer_num'])
+    df1['5-10inner_num'] = list(df[df['block'] == '5-10']['inner_num'])
+    df1['5-10outer_num'] = list(df[df['block'] == '5-10']['outer_num'])
+    df1['10-&inner_num'] = list(df[df['block'] == '10-&']['inner_num'])
+    df1['10-&outer_num'] = list(df[df['block'] == '10-&']['outer_num'])
+    df1.to_csv("C:/Users/HP/Desktop/df1.csv", index=False)
