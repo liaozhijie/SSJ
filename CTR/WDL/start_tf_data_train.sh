@@ -22,6 +22,7 @@ if [ $monitor_data_len -gt 10 ]; then
 	#sh $base_dir/create_7_day_data.sh
         sh $base_dir/data_clean.sh $date
 	sh $base_dir/create_data.sh $date_format
+	sh $base_dir/embedding_init.sh
 	sh $base_dir/model_train.sh $date_format
         sh $base_dir/get_wdl_weight.sh $date
 	current_ver_log=$(tail -1 ${base_dir}/trainLogs/${date_format}.log)
