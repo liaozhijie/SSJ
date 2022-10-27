@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Author: jiabin
-# @Date  : 2019/05/17
+# @Author: zhijie
+# @Date  : 2019/11/17
 
 import tensorflow as tf
 import numpy as np
