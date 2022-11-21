@@ -1,10 +1,48 @@
 from Estimator_utils import deepctr_model_fn, DNN_SCOPE_NAME, variable_scope
 import tensorflow as tf
-from deepFM import FM, embedding_layer, dnn_layer, Liner
+from deepFM import embedding_layer, dnn_layer, Liner
 from Estimator_layer_utils import concat_func, combined_dnn_input
 from Estimator_feature_columns import get_linear_logit, input_from_feature_columns
 
+class FM(Layer):
+    """Factorization Machine models pairwise (order-2) feature interactions
+     without linear term and bias.
+    """
 
+    def __init__(self, **kwargs):
+
+        super(FM, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        if len(input_shape) != 3:
+            raise ValueError("Unexpected inputs dimensions % d,\
+                             expect to be 3 dimensions" % (len(input_shape)))
+
+        super(FM, self).build(input_shape)  # Be sure to call this somewhere!
+
+    def call(self, inputs, **kwargs):
+
+        if K.ndim(inputs) != 3:
+            raise ValueError(
+                "Unexpected inputs dimensions %d, expect to be 3 dimensions"
+                % (K.ndim(inputs)))
+
+        concated_embeds_value = inputs
+
+        square_of_sum = tf.square(reduce_sum(
+            concated_embeds_value, axis=1, keep_dims=True))
+        sum_of_square = reduce_sum(
+            concated_embeds_value * concated_embeds_value, axis=1, keep_dims=True)
+        cross_term = square_of_sum - sum_of_square
+        cross_term = 0.5 * reduce_sum(cross_term, axis=2, keep_dims=False)
+
+        return cross_term
+
+    def compute_output_shape(self, input_shape):
+        return (None, 1)
+
+
+      
 def DeepFMEstimator(linear_feature_columns, dnn_feature_columns, dnn_hidden_units=(256, 128, 64),
                     l2_reg_linear=0.00001, l2_reg_embedding=0.00001, l2_reg_dnn=0, seed=1024, dnn_dropout=0,
                     dnn_activation='relu', dnn_use_bn=False, task='binary', model_dir=None, config=None,
