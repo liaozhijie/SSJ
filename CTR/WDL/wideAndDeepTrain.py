@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Author: zhijie
-# @Date  : 2019/11/17
 
 import tensorflow as tf
 import numpy as np
