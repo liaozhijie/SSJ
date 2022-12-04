@@ -283,22 +283,16 @@ def build_model_columns(feature_conf_cf,cross_cf_path):
 
                     embed_dim = 20
                     embedding_initializer_origid = load_init_embedding(fc_path, emb_path, embed_dim, 'origid_tensor', 'origid_embedding')
-                    deep_columns.append(embedding_column(col,
+                    _embedding_column = embedding_column(col,
                                                          dimension=embed_dim,
                                                          combiner='sqrtn',
                                                          initializer=embedding_initializer_origid,
                                                          ckpt_to_load_from=None,
                                                          tensor_name_in_ckpt=None,
                                                          max_norm=None,
-                                                         trainable=True))
-                    wide_columns.append(embedding_column(col,
-                                                 dimension=embed_dim,
-                                                 combiner='sqrtn',
-                                                 initializer=embedding_initializer_origid,
-                                                 ckpt_to_load_from=None,
-                                                 tensor_name_in_ckpt=None,
-                                                 max_norm=None,
-                                                 trainable=True))
+                                                         trainable=True)
+                    deep_columns.append(_embedding_column)
+                    wide_columns.append(_embedding_column)
                     deep_dim += embed_dim
                     wide_dim += embed_dim
 
